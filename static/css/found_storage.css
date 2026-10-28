@@ -1,0 +1,284 @@
+:root {
+    --primary: #283F55;
+    --secondary: #E57D29;
+    --accent: #93A489;
+    --light-gray: #F2F4F8;
+}
+
+/* ===== General ===== */
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--light-gray);
+    color: var(--primary);
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+    width: 220px;
+    background: var(--primary);
+    color: #fff;
+    min-height: 100vh;
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.sidebar h2 {
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 15px 0;
+}
+
+.sidebar ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease, transform 0.2s ease, text-shadow 0.3s ease;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.sidebar ul li a i {
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+/* Hover + Active نفس اللون */
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+    background: none;
+    color: var(--secondary);
+    transform: scale(1.05);
+    text-shadow: 0 0 6px rgba(229, 125, 41, 0.6);
+    cursor: pointer;
+    border-left: 4px solid var(--secondary); /* خط جانبي يوضح الصفحة الحالية */
+}
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(-10px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+/* ===== Main Content ===== */
+.main-content {
+    margin-left: 220px;
+    padding: 20px;
+    flex: 1;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.notifications {
+    position: relative;
+    font-size: 20px;
+}
+
+.badge {
+    background: var(--secondary);
+    color: #fff;
+    border-radius: 50%;
+    padding: 3px 8px;
+    font-size: 12px;
+    position: absolute;
+    top: -8px;
+    right: -10px;
+}
+
+/* ===== Filter Card ===== */
+.filter-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+}
+
+/* ===== Reports Cards ===== */
+#reportsContainer .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+#reportsContainer .card:hover {
+    transform: translateY(-3px);
+}
+
+/* ===== Export Buttons ===== */
+.btn-outline-success {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn-outline-success:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+.btn-outline-primary {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+.btn-outline-secondary {
+    border-color: var(--secondary);
+    color: var(--secondary);
+}
+
+.btn-outline-secondary:hover {
+    background: var(--secondary);
+    color: #fff;
+}
+
+/* ===== Settings Dropdown ===== */
+/* ===== Settings Dropdown ===== */
+.sidebar ul li.dropdown {
+    position: relative;
+}
+
+.sidebar ul li.dropdown .dropdown-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: none;
+    flex-direction: column;
+
+    background: none;          /* نشيل الخلفية */
+    position: static;          /* نخليه ضمن التدفق الطبيعي */
+    min-width: 100%;           /* ياخد عرض السايدبار */
+}
+
+.sidebar ul li.dropdown .dropdown-menu.show {
+    display: flex;
+}
+
+.sidebar ul li.dropdown .dropdown-menu li a {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 15px;
+    color: #fff;
+    padding: 10px 20px;
+
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar ul li.dropdown .dropdown-menu li {
+    background: none;
+}
+
+.sidebar ul li.dropdown .dropdown-menu li a {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+/* إزالة ستايل Bootstrap من Dropdown داخل Sidebar */
+.sidebar .dropdown-menu {
+    position: static !important;
+    float: none !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: 100% !important;
+}
+
+.sidebar .dropdown-menu li {
+    width: 100%;
+}
+
+.sidebar .dropdown-menu li a {
+    background: transparent !important;
+    border: none !important;
+}
+  /* Animation */
+  @keyframes fadeIn {
+    from {opacity: 0; transform: translateY(-10px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+  
+ 
+/* ===== Dark Mode ===== */
+body.dark-mode {
+    background: #1e1e1e;
+    color: #f2f2f2;
+}
+
+body.dark-mode .sidebar {
+    background: #111;
+    color: #f2f2f2;
+}
+
+body.dark-mode .sidebar ul li a {
+    color: #f2f2f2;
+}
+
+body.dark-mode .sidebar ul li a:hover {
+    color: var(--secondary);
+}
+
+body.dark-mode .main-content {
+    background: #1e1e1e;
+    color: #f2f2f2;
+}
+
+body.dark-mode .card {
+    background: #2a2a2a;
+    color: #f2f2f2;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 992px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        min-height: auto;
+    }
+    .main-content {
+        margin-left: 0;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    header h2 {
+        font-size: 18px;
+    }
+    #reportsContainer .card {
+        min-width: 100%;
+    }
+    .export button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

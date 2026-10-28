@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="nav_brand">Lost & Found Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <style>
+        .hero {
+            padding: 100px 0 80px;
+            background: linear-gradient(rgba(26, 43, 76, 0.9), rgba(26, 43, 76, 0.8)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074') center/cover fixed;
+            text-align: center;
+            color: white;
+        }
+
+        .ai-search-box {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 50px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            max-width: 700px;
+            margin: 40px auto 0;
+        }
+
+            .ai-search-box i {
+                color: var(--secondary);
+                font-size: 24px;
+                margin: 0 15px;
+            }
+
+            .ai-search-box input {
+                flex: 1;
+                background: transparent;
+                border: none;
+                color: white;
+                font-size: 16px;
+                outline: none;
+            }
+
+                .ai-search-box input::placeholder {
+                    color: rgba(255,255,255,0.7);
+                }
+
+        .category-card {
+            background: var(--white);
+            padding: 30px 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: 0.3s;
+            border-bottom: 4px solid transparent;
+        }
+
+            .category-card:hover {
+                transform: translateY(-10px);
+                box-shadow: var(--shadow-md);
+                border-color: var(--secondary);
+            }
+
+            .category-card i {
+                font-size: 50px;
+                color: var(--primary);
+                margin-bottom: 15px;
+            }
+
+        footer {
+            background: var(--primary);
+            color: white;
+            padding: 50px 0 20px;
+            margin-top: 50px;
+        }
+
+        .social-icons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            margin: 0 5px;
+            font-size: 18px;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+            .social-icons a:hover {
+                background: var(--secondary);
+                color: var(--primary);
+                transform: scale(1.1);
+            }
+
+        .navbar-container-custom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* 🚨 تصميم كروت البحث والمودال 🚨 */
+        .search-result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px 20px 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            text-align: center;
+            border: 1px solid #eee;
+            position: relative;
+            height: 100%;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+            .search-result-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-box {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: right;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        body[data-lang="en"] .modal-box {
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        body.dark-mode .category-card {
+            background-color: #1A2235;
+            border: 1px solid #2C3E50;
+            border-bottom: 4px solid transparent;
+        }
+
+            body.dark-mode .category-card:hover {
+                border-color: var(--secondary);
+            }
+
+            body.dark-mode .category-card h5 {
+                color: white !important;
+            }
+
+        body.dark-mode footer {
+            background: #1A2235;
+            border-top: 1px solid #2C3E50;
+        }
+
+        body.dark-mode .search-result-card {
+            background-color: #1A2235 !important;
+            border: 1px solid #2C3E50 !important;
+        }
+
+            body.dark-mode .search-result-card h5 {
+                color: white !important;
+            }
+
+        body.dark-mode #noResultsMsg {
+            background-color: #1A2235 !important;
+            border: 1px solid #2C3E50;
+        }
+
+        body.dark-mode .modal-box {
+            background-color: #1A2235;
+            color: white;
+        }
+
+        body.dark-mode .detail-row {
+            border-bottom-color: #2C3E50;
+        }
+    </style>
+</head>
+<body data-lang="ar">
+
+    <nav class="navbar navbar-expand-lg sticky-top bg-white shadow-sm">
+        <div class="container navbar-container-custom">
+            <a class="navbar-brand d-flex align-items-center m-0" href="{{ url_for('user_home') }}">
+                <img src="https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg" alt="Logo" class="logo-img me-2 ms-2" style="max-height: 50px;">
+                <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                    <span style="color: var(--primary); font-weight: 800; font-size: 1.1rem;">Lost & Found</span>
+                    <span style="color: gray; font-weight: 600; font-size: 0.7rem; letter-spacing: 1px;">MANAGEMENT SYSTEM</span>
+                </div>
+            </a>
+
+            <div class="d-flex align-items-center gap-3">
+                <a href="#" class="nav-link fw-bold" style="color: var(--primary); text-decoration:none;"><i class="fa-solid fa-user-circle"></i> <span>{{ user.fullname if user else 'حسابي' }}</span></a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm fw-bold" style="border-radius:6px; text-decoration:none; padding:8px 15px;" data-i18n="btn_logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل خروج</a>
+                <button class="btn-secondary-custom text-only lang-toggle" style="padding: 8px 15px; width:auto; margin:0;">EN</button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="hero">
+            <div class="container">
+                <h1 data-i18n="home_title" style="font-size: 3.5rem; font-weight: 800; color: var(--secondary);">هل فقدت شيئاً في المطار؟</h1>
+                <p data-i18n="home_desc" style="font-size: 1.3rem; font-weight: 400; margin-top:15px;">نظام إلكتروني متكامل وآمن لإدارة المفقودات والمعثورات في المطار.</p>
+
+                <div class="ai-search-box">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="searchInputBox" data-i18n="ph_search_items" placeholder="اكتب ما فقدته...">
+                    <button id="searchBtn" class="btn-secondary-custom" data-i18n="btn_search" style="width:auto; margin:0;">بحث عام</button>
+                </div>
+
+                <div class="mt-5 d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{{ url_for('lost_report') }}" class="btn-secondary-custom" data-i18n="btn_report_lost" style="font-size:18px; width:auto; margin:0;"><i class="fa-solid fa-search"></i> الإبلاغ عن مفقود</a>
+                    <a href="{{ url_for('found_report') }}" class="btn-primary-custom" data-i18n="btn_report_found" style="font-size:18px; width:auto; margin:0;"><i class="fa-solid fa-hand-holding-heart"></i> الإبلاغ عن معثور عليه</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mt-5" id="searchResultsSection" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <h3 class="auto-trans" data-ar="نتائج البحث الشامل:" style="color: var(--primary); font-weight: 800; margin: 0;">نتائج البحث الشامل:</h3>
+                <button class="btn btn-outline-danger btn-sm auto-trans" data-ar="إغلاق البحث" onclick="document.getElementById('searchResultsSection').style.display='none'"><i class="fa-solid fa-times"></i> إغلاق البحث</button>
+            </div>
+
+            <div class="row g-4" id="searchResultsContainer"></div>
+
+            <div id="noResultsMsg" style="display:none; text-align:center; padding: 40px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+                <i class="fa-solid fa-box-open" style="font-size: 50px; color: #bdc3c7; margin-bottom: 15px;"></i>
+                <h5 style="color: gray; font-weight: bold;" class="auto-trans" data-ar="لم نجد أي أغراض مطابقة لبحثك في النظام.">لم نجد أي أغراض مطابقة لبحثك في النظام.</h5>
+                <p style="color: #95a5a6; font-size: 15px; margin-top: 10px;" class="auto-trans" data-ar="يرجى رفع بلاغ مفقود وسنقوم بإعلامك فور العثور عليه.">يرجى رفع بلاغ مفقود وسنقوم بإعلامك فور العثور عليه.</p>
+                <a href="{{ url_for('lost_report') }}" class="btn btn-primary mt-3 auto-trans" data-ar="رفع بلاغ مفقودات" style="border-radius: 8px; font-weight: bold;"><i class="fa-solid fa-plus"></i> رفع بلاغ مفقودات</a>
+            </div>
+        </div>
+
+        <div class="container mt-5">
+            <div class="row g-4">
+                <div class="col-md-3 col-6"><div class="category-card"><i class="fa-solid fa-suitcase-rolling"></i><h5 data-i18n="cat_bags" style="font-weight:700; color:var(--primary);">الحقائب والأمتعة</h5></div></div>
+                <div class="col-md-3 col-6"><div class="category-card"><i class="fa-solid fa-mobile-screen-button"></i><h5 data-i18n="cat_elec" style="font-weight:700; color:var(--primary);">الإلكترونيات</h5></div></div>
+                <div class="col-md-3 col-6"><div class="category-card"><i class="fa-solid fa-passport"></i><h5 data-i18n="cat_docs" style="font-weight:700; color:var(--primary);">الوثائق الرسمية</h5></div></div>
+                <div class="col-md-3 col-6"><div class="category-card"><i class="fa-solid fa-glasses"></i><h5 data-i18n="cat_personal" style="font-weight:700; color:var(--primary);">متعلقات شخصية</h5></div></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container text-center">
+            <img src="https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg" alt="Logo" class="logo-img mb-3" style="width: 70px; border-radius:50%;">
+            <h4 style="color: var(--secondary); font-weight: 800;">Lost & Found Management System</h4>
+            <p data-i18n="footer_desc" style="color: rgba(255,255,255,0.7); max-width: 500px; margin: 10px auto;">نظام آمن وسريع لضمان عودة مقتنياتك المفقودة إليك.</p>
+            <div class="social-icons mb-4 mt-3">
+                <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            </div>
+            <p data-i18n="footer_copy" style="margin: 0; font-size: 14px; color: rgba(255,255,255,0.5);">© 2026 جميع الحقوق محفوظة - إدارة المفقودات</p>
+        </div>
+    </footer>
+
+    <div class="modal-overlay" id="detailsModal">
+        <div class="modal-box">
+            <h3 style="color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                <i class="fa-solid fa-circle-info"></i> <span class="auto-trans" data-ar="تفاصيل الغرض">تفاصيل الغرض</span>
+            </h3>
+
+            <div class="detail-row"><span style="font-weight:bold; color:var(--primary);" class="auto-trans" data-ar="الاسم:">الاسم:</span> <span id="modalName" class="auto-trans" data-ar=""></span></div>
+            <div class="detail-row"><span style="font-weight:bold; color:var(--primary);" class="auto-trans" data-ar="الفئة:">الفئة:</span> <span id="modalCategory" class="auto-trans" data-ar=""></span></div>
+            <div class="detail-row"><span style="font-weight:bold; color:var(--primary);" class="auto-trans" data-ar="التاريخ:">التاريخ:</span> <span id="modalDate"></span></div>
+
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px; border-right: 4px solid var(--secondary);">
+                <p id="modalActionMsg" style="margin:0; font-size: 14px; font-weight:bold; color:var(--dark);" class="auto-trans" data-ar=""></p>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+                <button class="btn btn-dark fw-bold auto-trans" data-ar="إغلاق" onclick="document.getElementById('detailsModal').style.display='none'">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/global.js') }}"></script>
+
+    <script>
+        const allItemsDB = [
+            {% if found_items %}
+            {% for item in found_items %}
+            {
+                id: "{{ item.id }}",
+                type: "found",
+                name: "{{ item.item_name }}",
+                category: "{{ item.category }}",
+                date: "{{ item.date_found }}",
+                image: "{{ item.image_file }}"
+            },
+            {% endfor %}
+            {% endif %}
+
+            {% if lost_items %}
+            {% for item in lost_items %}
+            {
+                id: "{{ item.id }}",
+                type: "lost",
+                name: "{{ item.item_name }}",
+                category: "{{ item.category }}",
+                date: "{{ item.date_lost }}",
+                image: "{{ item.image_file }}"
+            },
+            {% endfor %}
+            {% endif %}
+        ];
+
+        const searchInputBox = document.getElementById('searchInputBox');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsSection = document.getElementById('searchResultsSection');
+        const resultsContainer = document.getElementById('searchResultsContainer');
+        const noResultsMsg = document.getElementById('noResultsMsg');
+
+        const searchDict = {
+            'الإلكترونيات': 'Electronics', 'متعلقات شخصية': 'Personal Items', 'الوثائق الرسمية': 'Documents', 'الحقائب والأمتعة': 'Bags & Luggage',
+            'نتائج البحث الشامل:': 'Comprehensive Search Results:', 'إغلاق البحث': 'Close Search',
+            'لم نجد أي أغراض مطابقة لبحثك في النظام.': 'No matching items found in the system.',
+            'يرجى رفع بلاغ مفقود وسنقوم بإعلامك فور العثور عليه.': 'Please submit a lost report and we will notify you once found.',
+            'رفع بلاغ مفقودات': 'Report Lost Item', 'معثور عليه (بالمستودع)': 'Found (In Storage)', 'مفقود (جاري البحث)': 'Lost (Searching)',
+            'المطالبة بالغرض': 'Claim Item', 'الإبلاغ عن العثور عليه': 'Report as Found',
+            'تفاصيل الغرض': 'Item Details', 'الاسم:': 'Name:', 'الفئة:': 'Category:', 'التاريخ:': 'Date:', 'إغلاق': 'Close',
+            'إذا كان هذا الغرض لك، يرجى مراجعة مكتب المفقودات في المطار مع إثبات الهوية للمطالبة به.': 'If this is yours, please visit the Lost & Found office with your ID to claim it.',
+            'إذا عثرت على هذا الغرض، يرجى تسليمه لأقرب رجل أمن أو لمكتب المفقودات في المطار.': 'If you found this item, please hand it over to security or the Lost & Found office.',
+
+            'ايفون 13 أحمر': 'Red iPhone 13', 'محفظة جلد بنية': 'Brown Leather Wallet', 'جواز سفر سوري': 'Syrian Passport', 'لابتوب ماك بوك': 'MacBook Laptop', 'ساعة كاسيو': 'Casio Watch', 'حقيبة سفر زرقاء': 'Blue Suitcase', 'نظارات شمسية ريبان': 'Ray-Ban Sunglasses', 'مفاتيح سيارة كيا': 'Kia Car Keys', 'حقيبة يد نسائية سوداء': 'Black Women\'s Handbag', 'تابلت سامسونج': 'Samsung Tablet', 'بطاقة بنك إسلامي': 'Islamic Bank Card', 'شاحن تايب سي': 'Type-C Charger', 'ملف أوراق خضراء': 'Green Documents Folder', 'جاكيت جلد أسود': 'Black Leather Jacket', 'عطر رجالي ديور': 'Dior Men\'s Perfume', 'سماعات جي بي ال': 'JBL Headphones',
+            'ايفون لونه أحمر عليه كفر': 'Red iPhone with Case', 'محفظة رجالية فيها هويات': 'Men\'s Wallet with IDs', 'لابتوب ابل فضي': 'Silver Apple Laptop', 'شنطة سفر لون أزرق': 'Blue Travel Bag', 'مفتاح سيارة مع ميدالية كيا': 'Car Key with Kia Keychain', 'تابلت شاشته كبيرة': 'Large Screen Tablet', 'فيزا كارد بنك إسلامي': 'Islamic Bank Visa Card', 'جاكيت شتوي أسود': 'Black Winter Jacket', 'كيس سوق حرة فيه عطر': 'Duty Free Bag with Perfume', 'جواز سفر مصري': 'Egyptian Passport',
+            'ايفون 14': 'iPhone 14', 'جواز سفر أردني': 'Jordanian Passport', 'حقيبة سفر كبيرة': 'Large Suitcase', 'محفظة رجالية': 'Men\'s Wallet', 'ساعة رولكس تقليد': 'Fake Rolex Watch', 'سماعات سوني': 'Sony Headphones', 'بطاقة بنك عربي': 'Arab Bank Card', 'شاحن لابتوب': 'Laptop Charger', 'مفاتيح منزل': 'House Keys', 'نظارات شمسية': 'Sunglasses', 'حقيبة يد صغيرة': 'Small Handbag', 'ايباد ميني': 'iPad Mini', 'ملف بلاستيكي': 'Plastic Folder', 'قبعة شتوية': 'Winter Hat', 'ميدالية سيارة': 'Car Keychain',
+            'تلفون سامسونج S24': 'Samsung S24 Phone', 'محفظة جلدية': 'Leather Wallet', 'حقيبة ظهر لابتوب': 'Laptop Backpack', 'ساعة ابل ذكية': 'Apple Smartwatch', 'نظارات طبية': 'Prescription Glasses', 'ايباد برو': 'iPad Pro', 'شاحن ايفون': 'iPhone Charger', 'شهادة ميلاد': 'Birth Certificate', 'حقيبة يد نسائية': 'Women\'s Handbag', 'سماعات ايربودز': 'AirPods', 'ملف أوراق رسمية': 'Official Documents Folder', 'جاكيت شتوي': 'Winter Jacket', 'عطر نسائي': 'Women\'s Perfume', 'لابتوب لينوفو': 'Lenovo Laptop', 'محفظة بطاقات': 'Card Holder', 'شنطة أطفال': 'Kids Bag', 'بطاقة أحوال مدنية': 'National ID Card', 'كاميرا كانون': 'Canon Camera'
+        };
+
+        function performSearch() {
+            let query = searchInputBox.value.trim().toLowerCase();
+            if(query === '') {
+                resultsSection.style.display = 'none';
+                return;
+            }
+
+            resultsSection.style.display = 'block';
+            resultsContainer.innerHTML = '';
+
+            let matches = allItemsDB.filter(item => {
+                let enName = (searchDict[item.name] || item.name).toLowerCase();
+                let enCat = (searchDict[item.category] || item.category).toLowerCase();
+                let arName = item.name.toLowerCase();
+                let arCat = item.category.toLowerCase();
+
+                return arName.includes(query) || arCat.includes(query) || enName.includes(query) || enCat.includes(query);
+            });
+
+            if(matches.length > 0) {
+                noResultsMsg.style.display = 'none';
+                matches.forEach(item => {
+                    let card = document.createElement('div');
+                    card.className = 'col-md-4 col-sm-6';
+
+                    let imgSrc = item.image && item.image !== 'default.jpg' ? '/static/uploads/' + item.image : 'https://cdn-icons-png.flaticon.com/512/10438/10438049.png';
+
+                    let isFound = item.type === 'found';
+                    let badgeColor = isFound ? 'var(--success)' : 'var(--danger)';
+                    let badgeText = isFound ? 'معثور عليه (بالمستودع)' : 'مفقود (جاري البحث)';
+                    let btnText = isFound ? 'المطالبة بالغرض' : 'الإبلاغ عن العثور عليه';
+                    let btnIcon = isFound ? 'fa-handshake' : 'fa-bullhorn';
+
+                    card.innerHTML = `
+                        <div class="search-result-card" style="border-top: 4px solid ${badgeColor};">
+                            <span style="background: ${badgeColor}; color: white; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: bold; position: absolute; top: 15px; right: 15px;" class="auto-trans" data-ar="${badgeText}">${badgeText}</span>
+                            <img src="${imgSrc}" style="width: 100px; height: 100px; object-fit: contain; margin-top: 15px; margin-bottom: 15px; border-radius:8px;">
+                            <h5 style="color: var(--primary); font-weight: 800; margin-bottom: 5px;" class="auto-trans" data-ar="${item.name}">${item.name}</h5>
+                            <p style="color: gray; font-size: 13px; margin-bottom: 5px;"><i class="fa-solid fa-tag"></i> <span class="auto-trans" data-ar="${item.category}">${item.category}</span></p>
+                            <p style="color: gray; font-size: 13px; margin-bottom: 15px;"><i class="fa-solid fa-calendar-days"></i> ${item.date}</p>
+                            <button class="btn btn-sm" style="background: ${badgeColor}; color: white; width: 100%; font-weight: bold; padding: 10px;" onclick="openDetailsModal('${item.name}', '${item.category}', '${item.date}', '${item.type}')">
+                                <i class="fa-solid ${btnIcon}"></i> <span class="auto-trans" data-ar="${btnText}">${btnText}</span>
+                            </button>
+                        </div>
+                    `;
+                    resultsContainer.appendChild(card);
+                });
+            } else {
+                noResultsMsg.style.display = 'block';
+            }
+
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+            translateSearchUI();
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        searchInputBox.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') performSearch();
+        });
+
+        function openDetailsModal(name, category, date, type) {
+            let nameEl = document.getElementById('modalName');
+            nameEl.setAttribute('data-ar', name);
+            nameEl.innerText = name;
+
+            let catEl = document.getElementById('modalCategory');
+            catEl.setAttribute('data-ar', category);
+            catEl.innerText = category;
+
+            document.getElementById('modalDate').innerText = date;
+
+            let msgEl = document.getElementById('modalActionMsg');
+            let msgText = type === 'found' ? 'إذا كان هذا الغرض لك، يرجى مراجعة مكتب المفقودات في المطار مع إثبات الهوية للمطالبة به.' : 'إذا عثرت على هذا الغرض، يرجى تسليمه لأقرب رجل أمن أو لمكتب المفقودات في المطار.';
+            msgEl.setAttribute('data-ar', msgText);
+
+            translateSearchUI();
+            document.getElementById('detailsModal').style.display = 'flex';
+        }
+
+        // 🚨 الترجمة الحصرية للـ Placeholder ونتائج البحث الديناميكية فقط 🚨
+        function translateSearchUI() {
+            let lang = document.body.getAttribute('data-lang') || 'ar';
+
+            // تغيير الـ Placeholder بدون لمس HTML
+            if (searchInputBox) {
+                searchInputBox.placeholder = lang === 'en' ? 'Search for lost or found items...' : 'اكتب ما فقدته...';
+            }
+
+            // ترجمة الكروت والمودال فقط (منع التخريب على global.js)
+            document.querySelectorAll('#searchResultsSection .auto-trans, #detailsModal .auto-trans').forEach(el => {
+                let arText = el.getAttribute('data-ar');
+                let translated = searchDict[arText] || arText;
+
+                if (lang === 'en') {
+                    if(el.children.length === 0) el.innerText = translated;
+                    else el.innerHTML = el.innerHTML.replace(arText, translated);
+                } else {
+                    if(el.children.length === 0) el.innerText = arText;
+                    else {
+                        let enText = searchDict[arText];
+                        if (enText && el.innerHTML.includes(enText)) el.innerHTML = el.innerHTML.replace(enText, arText);
+                    }
+                }
+            });
+
+            // Dark mode للمودال
+            let isDark = document.body.classList.contains('dark-mode');
+            let modalBox = document.querySelector('#detailsModal .modal-box');
+            if(modalBox) {
+                modalBox.style.backgroundColor = isDark ? '#1A2235' : 'white';
+                modalBox.style.color = isDark ? 'white' : 'var(--dark)';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            translateSearchUI(); // التشغيل الأولي
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach(mutation => {
+                    if (mutation.attributeName === 'data-lang' || mutation.attributeName === 'class') {
+                        translateSearchUI();
+                    }
+                });
+            });
+            observer.observe(document.body, { attributes: true });
+        });
+    </script>
+</body>
+</html>

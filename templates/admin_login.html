@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Lost & Found</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <style>
+        .logo-container {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 3px solid var(--primary);
+            overflow: hidden;
+        }
+
+            .logo-container img {
+                max-height: 70%;
+                width: auto;
+                border-radius: 5px;
+            }
+
+        .error-alert {
+            color: #e74c3c;
+            background: #fdeaea;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .input-group {
+            width: 100%;
+            margin-top: 15px;
+        }
+
+            .input-group label {
+                display: block;
+                font-weight: 600;
+                margin-bottom: 8px;
+                color: var(--dark);
+                font-family: inherit;
+            }
+
+            .input-group input:not([type="password"]) {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 12px 15px;
+                border-radius: 10px;
+                border: 1px solid #ddd;
+                background-color: #fcfcfc;
+                font-size: 15px;
+                font-family: inherit;
+            }
+
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+            .password-wrapper input {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 12px 15px;
+                border-radius: 10px;
+                border: 1px solid #ddd;
+                background-color: #fcfcfc;
+                font-size: 15px;
+                font-family: inherit;
+            }
+
+            .password-wrapper i.toggle-password {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                cursor: pointer;
+                color: #7f8c8d;
+                padding: 5px;
+                z-index: 10;
+            }
+
+            .input-group.layout-ltr label, .password-wrapper.layout-ltr input {
+                text-align: left;
+            }
+
+            .password-wrapper.layout-ltr i.toggle-password {
+                right: 12px;
+            }
+
+            .password-wrapper.layout-ltr input {
+                padding-right: 40px;
+            }
+
+            .input-group.layout-rtl label, .password-wrapper.layout-rtl input {
+                text-align: right;
+            }
+
+            .password-wrapper.layout-rtl i.toggle-password {
+                left: 12px;
+            }
+
+            .password-wrapper.layout-rtl input {
+                padding-left: 40px;
+            }
+    </style>
+</head>
+<body data-lang="ar">
+
+    <div class="auth-page-wrapper">
+        <div class="top-buttons-auth">
+            <a href="{{ url_for('login') }}" class="top-btn-auth" title="بوابة المسافرين"><i class="fa-solid fa-users"></i></a>
+            <button class="top-btn-auth lang-toggle text-only" id="langToggleBtn">EN</button>
+        </div>
+
+        <div class="auth-box-container">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="error-alert auto-trans" data-ar="{{ message }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div class="logo-container">
+                    <img src="{{ url_for('static', filename='logo.jpg') }}"
+                         onerror="this.onerror=null; this.src='https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg';"
+                         alt="Logo">
+                </div>
+            </div>
+
+            <h2 class="auto-trans" data-ar="بوابة الإدارة" style="color: var(--primary); margin-bottom: 25px; font-weight: 800; text-align: center;">بوابة الإدارة</h2>
+
+            <form action="{{ url_for('admin_login') }}" method="POST">
+                <div class="input-group">
+                    <label class="auto-trans" data-ar="الرقم الوظيفي للمدير (Admin ID)">الرقم الوظيفي للمدير (Admin ID)</label>
+                    <input type="text" id="adminId" name="adminId" class="ph-trans" data-ar="مثال: 1001" placeholder="مثال: 1001" required autofocus>
+                </div>
+
+                <div class="input-group">
+                    <label class="auto-trans" data-ar="كلمة المرور">كلمة المرور</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="adminPass" name="adminPass" class="ph-trans" data-ar="••••••••" placeholder="••••••••" required>
+                        <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility()"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary-custom auto-trans" data-ar="دخول للوحة التحكم" style="width: 100%; padding: 14px; border-radius: 10px; font-size: 16px; margin-top: 25px; cursor: pointer; background-color: var(--primary); color: white; border: none; font-weight: bold; font-family: inherit;">دخول للوحة التحكم</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/global.js') }}"></script>
+
+    <script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('adminPass');
+            const toggleIcon = document.querySelector('.toggle-password');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const adminIdInput = document.getElementById('adminId');
+            if (adminIdInput) {
+                adminIdInput.addEventListener('input', function (e) {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            }
+        });
+
+        const dict = {
+            'بوابة الإدارة': 'Admin Portal',
+            'الرقم الوظيفي للمدير (Admin ID)': 'Admin ID',
+            'كلمة المرور': 'Password',
+            'دخول للوحة التحكم': 'Login to Dashboard',
+            'بيانات دخول المسؤول غير صحيحة': 'Invalid Admin Credentials',
+            'مثال: 1001': 'e.g. 1001'
+        };
+
+        function translateAll() {
+            let lang = localStorage.getItem('appLang') || document.body.getAttribute('data-lang') || 'ar';
+            document.querySelectorAll('.auto-trans').forEach(el => {
+                let arText = el.getAttribute('data-ar');
+                if (lang === 'en' && dict[arText]) el.innerText = dict[arText];
+                else el.innerText = arText;
+            });
+            document.querySelectorAll('.ph-trans').forEach(el => {
+                let arText = el.getAttribute('data-ar');
+                if (lang === 'en' && dict[arText]) el.placeholder = dict[arText];
+                else el.placeholder = arText;
+            });
+
+            const langClassToAdd = lang === 'en' ? 'layout-ltr' : 'layout-rtl';
+            const langClassToRemove = lang === 'en' ? 'layout-rtl' : 'layout-ltr';
+
+            document.querySelectorAll('.input-group, .password-wrapper').forEach(el => {
+                el.classList.remove(langClassToRemove);
+                el.classList.add(langClassToAdd);
+            });
+
+            const toggleIcon = document.querySelector('.toggle-password');
+            const adminPassInput = document.getElementById('adminPass');
+            if (toggleIcon && adminPassInput) {
+                if (adminPassInput.type === 'text') {
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                } else {
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                }
+            }
+
+            document.body.style.direction = lang === 'en' ? 'ltr' : 'rtl';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            translateAll();
+            const observer = new MutationObserver(translateAll);
+            observer.observe(document.body, { attributes: true, attributeFilter: ['data-lang'] });
+        });
+    </script>
+</body>
+</html>

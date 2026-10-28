@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Montserrat:wght@400;600;700&display=swap');
+
+:root {
+    --brand-primary: #244163;
+    --brand-accent: #E28327;
+    --bg-light: #F4F7F9;
+    --white: #FFFFFF;
+    --text-dark: #122136;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', 'Cairo', sans-serif;
+    height: 100vh;
+    background-color: var(--bg-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url('photo.jpg'); /* تأكد من وضع مسار صورة المطار هنا */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    z-index: 1;
+}
+
+/* طبقة تعتيم فوق صورة المطار لإبراز مربع تسجيل الدخول */
+body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(18, 33, 54, 0.75); /* كحلي داكن شفاف */
+    z-index: -1;
+}
+
+.login-container {
+    background: var(--white);
+    padding: 40px;
+    width: 100%;
+    max-width: 450px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    animation: fadeIn 0.6s ease-out forwards;
+    border-top: 6px solid var(--brand-accent); /* خط برتقالي من الأعلى */
+    text-align: center;
+}
+
+.logo-box img {
+    width: 80px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.login-container h2 {
+    color: var(--brand-primary);
+    margin-bottom: 25px;
+    font-weight: 800;
+    font-size: 1.8rem;
+}
+
+.login-container p.desc {
+    color: #64748b;
+    margin-bottom: 25px;
+    font-size: 0.95rem;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+html[dir="rtl"] .input-group { text-align: right; }
+
+.input-group label {
+    display: block;
+    color: var(--brand-primary);
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    outline: none;
+    background-color: #f8fafc;
+    color: var(--text-dark);
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    border-color: var(--brand-accent);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(226, 131, 39, 0.15);
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: none;
+    background: var(--brand-primary);
+    color: var(--white);
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    font-family: inherit;
+}
+
+button[type="submit"]:hover {
+    background: var(--brand-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(226, 131, 39, 0.3);
+}
+
+.extra {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.95rem;
+    color: #475569;
+}
+
+.extra a {
+    color: var(--brand-accent);
+    text-decoration: none;
+    font-weight: 700;
+    transition: 0.3s;
+}
+
+.extra a:hover {
+    color: var(--brand-primary);
+    text-decoration: underline;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}

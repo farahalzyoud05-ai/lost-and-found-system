@@ -1,0 +1,82 @@
+/* Sidebar Styles */
+.sidebar {
+    width: 260px;
+    background: var(--primary);
+    color: #fff;
+    min-height: 100vh;
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+    z-index: 100;
+}
+
+.sidebar ul { list-style: none; padding: 0; }
+.sidebar ul li { margin: 10px 0; }
+.sidebar ul li a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 8px;
+}
+.sidebar ul li a i { margin-left: 15px; font-size: 18px; }
+.sidebar ul li a:hover, .sidebar ul li a.active {
+    background: rgba(255,255,255,0.1);
+    color: var(--secondary);
+    border-right: 4px solid var(--secondary);
+}
+
+/* Main Content */
+.main-content {
+    margin-right: 260px; /* هذا السطر هو اللي بيبعد الجدول عن القائمة الجانبية */
+    padding: 30px;
+    background-color: var(--light-gray);
+    min-height: 100vh;
+}
+
+.table-section {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* تنسيق النصوص داخل الجدول */
+.field {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+.field .label {
+    font-weight: 700;
+    color: var(--primary);
+    width: 100px;
+}
+.field .value {
+    color: var(--dark);
+}
+
+/* شريط تقدم نسبة التطابق (Progress Bar) */
+.progress-custom {
+    height: 22px;
+    border-radius: 10px;
+    background-color: #e9ecef;
+    overflow: hidden;
+    margin-top: 10px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+.progress-bar-custom {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.85rem;
+    transition: width 1s ease-in-out;
+}

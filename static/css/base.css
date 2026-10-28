@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Montserrat:wght@400;600;700;800&display=swap');
+
+:root {
+    /* ألوان اللوجو الدقيقة */
+    --brand-primary: #244163;   /* الأزرق الرئيسي للوجو */
+    --brand-accent: #E28327;    /* البرتقالي/الذهبي للوجو */
+    --brand-secondary: #548CBF; /* الأزرق الفاتح للوجو */
+    --brand-darkest: #122136;   /* لون الطائرة/الكحلي الداكن */
+    
+    /* ألوان الوضع الفاتح (Light Mode) */
+    --bg-color: #F4F7F9;
+    --surface-color: #FFFFFF;
+    --text-primary: #122136;
+    --text-secondary: #475569;
+    --border-color: #E2E8F0;
+    --shadow: 0 8px 24px rgba(36, 65, 99, 0.08);
+}
+
+/* ألوان الوضع الداكن الفخمة (Dark Mode) - مستوحاة من كحلي اللوجو وليس الأسود العادي */
+body.dark-mode {
+    --bg-color: #0A111A;
+    --surface-color: #122136;
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --border-color: #244163;
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+body[data-lang="en"] { font-family: 'Montserrat', sans-serif; }
+body[data-lang="ar"] { font-family: 'Cairo', sans-serif; }

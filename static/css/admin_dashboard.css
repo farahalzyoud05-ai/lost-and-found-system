@@ -1,0 +1,312 @@
+/* استيراد الألوان الأساسية إذا لم تكن تستخدم base.css */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Montserrat:wght@400;600;700&display=swap');
+
+:root {
+    --brand-primary: #244163; 
+    --brand-accent: #E28327;  
+    --brand-secondary: #548CBF; 
+    --brand-darkest: #122136; 
+    --bg-color: #F4F7F9;
+    --surface-color: #FFFFFF;
+    --text-primary: #122136;
+    --border-color: #E2E8F0;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'Montserrat', 'Cairo', sans-serif;
+    transition: 0.3s ease;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+    width: 260px; /* تم تكبير العرض لراحة العين */
+    background: var(--brand-primary);
+    color: #fff;
+    min-height: 100vh;
+    padding: 25px 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+    z-index: 100;
+    transition: 0.3s;
+}
+
+.sidebar .logo-wrapper {
+    text-align: center;
+    margin-bottom: 35px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar .logo-wrapper img {
+    width: 90px;
+    border-radius: 12px; /* جعل حواف اللوجو ناعمة */
+    background: #fff;
+    padding: 5px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    margin-bottom: 15px;
+}
+
+.sidebar .logo-wrapper h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar ul li {
+    margin: 8px 0;
+}
+
+.sidebar ul li a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 12px 15px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.sidebar ul li a i {
+    margin-right: 12px;
+    font-size: 18px;
+    color: var(--brand-secondary);
+}
+
+/* Hover & Active */
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+    background-color: rgba(226, 131, 39, 0.15); /* لون شفاف من البرتقالي */
+    color: var(--brand-accent); /* البرتقالي الخاص باللوجو */
+    transform: translateX(5px);
+}
+html[dir="rtl"] .sidebar ul li a:hover,
+html[dir="rtl"] .sidebar ul li a.active {
+    transform: translateX(-5px);
+}
+
+.sidebar ul li a.active i {
+    color: var(--brand-accent);
+}
+
+/* ===== Dropdown ===== */
+.sidebar ul li.dropdown .dropdown-menu {
+    list-style: none;
+    padding: 10px;
+    margin: 5px 0 0 0;
+    display: none;
+    flex-direction: column;
+    background: rgba(18, 33, 54, 0.5); /* كحلي داكن جداً شفاف */
+    border-radius: 10px;
+}
+.sidebar ul li.dropdown .dropdown-menu.show { display: flex; }
+.sidebar ul li.dropdown .dropdown-menu li a {
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+/* ===== Main Content ===== */
+.main-content {
+    margin-left: 260px; /* يتطابق مع عرض السايدبار */
+    padding: 30px 40px;
+    min-height: 100vh;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface-color);
+    padding: 20px 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(36, 65, 99, 0.05);
+    margin-bottom: 30px;
+}
+
+header h2 {
+    margin: 0;
+    font-size: 24px;
+    color: var(--brand-primary);
+    font-weight: 700;
+}
+
+.notifications {
+    position: relative;
+    font-size: 22px;
+    color: var(--brand-primary);
+    cursor: pointer;
+}
+
+.badge {
+    background: var(--brand-accent);
+    color: #fff;
+    border-radius: 50%;
+    padding: 4px 7px;
+    font-size: 11px;
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    font-weight: bold;
+}
+
+/* ===== Cards ===== */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: var(--surface-color);
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(36, 65, 99, 0.05);
+    text-align: center;
+    font-weight: 600;
+    font-size: 16px;
+    border-bottom: 4px solid var(--brand-secondary);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-bottom-color: var(--brand-accent);
+}
+
+.card h3 {
+    margin: 15px 0 0 0;
+    font-size: 32px;
+    color: var(--brand-primary);
+    font-weight: 800;
+}
+
+/* ===== Charts ===== */
+.charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+canvas {
+    background: var(--surface-color);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(36, 65, 99, 0.05);
+    width: 100% !important;
+    height: 300px !important;
+}
+
+/* ===== Table ===== */
+.table-section {
+    background: var(--surface-color);
+    padding: 25px 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(36, 65, 99, 0.05);
+    overflow-x: auto;
+}
+
+.table-section h3 {
+    margin-top: 0;
+    color: var(--brand-primary);
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+    background: var(--bg-color);
+    color: var(--text-primary);
+    transition: 0.3s;
+}
+
+#searchInput:focus {
+    border-color: var(--brand-secondary);
+    box-shadow: 0 0 0 3px rgba(84, 140, 191, 0.2);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+    font-size: 15px;
+}
+html[dir="rtl"] table th, html[dir="rtl"] table td { text-align: right; }
+
+table th {
+    color: var(--brand-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+/* ===== Buttons ===== */
+.export button {
+    background: var(--brand-accent);
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 15px;
+    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(226, 131, 39, 0.3);
+}
+
+.export button:hover {
+    background: #c97120;
+    transform: translateY(-2px);
+}
+
+/* ================= DARK MODE ================= */
+body.dark-mode {
+    --bg-color: #0A111A;
+    --surface-color: #122136; /* لون الطائرة في اللوجو */
+    --text-primary: #F8FAFC;
+    --border-color: #1d334d;
+}
+
+body.dark-mode .sidebar {
+    background: #060a0f;
+    border-right: 1px solid var(--border-color);
+}
+html[dir="rtl"] body.dark-mode .sidebar { border-left: 1px solid var(--border-color); border-right: none;}
+
+body.dark-mode .card h3 { color: var(--brand-accent); }
+body.dark-mode header h2 { color: var(--brand-accent); }
+body.dark-mode .notifications { color: var(--text-primary); }
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.main-content > div, header { animation: fadeIn 0.5s ease-out; }

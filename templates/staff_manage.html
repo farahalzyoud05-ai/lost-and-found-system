@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Staff Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <style>
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+            .sidebar ul {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                margin: 0;
+                padding: 0 0 20px 0;
+            }
+
+        .bottom-menu {
+            margin-top: auto;
+        }
+
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            margin: 2px 10px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+            .sidebar ul li a.active {
+                background: var(--secondary);
+                color: var(--primary);
+                font-weight: bold;
+                border-radius: 10px;
+            }
+
+        .table-container {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            overflow-x: auto;
+            margin-top: 15px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .table-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            max-width: 300px;
+            width: 100%;
+        }
+
+            .search-box input {
+                width: 100%;
+                padding: 10px 35px 10px 15px;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                font-family: inherit;
+                font-size: 14px;
+                outline: none;
+                transition: 0.3s;
+            }
+
+                .search-box input:focus {
+                    border-color: var(--primary);
+                    box-shadow: 0 0 5px rgba(26, 43, 76, 0.2);
+                }
+
+            .search-box i {
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #7f8c8d;
+            }
+
+        body[data-lang="en"] .search-box input {
+            padding: 10px 15px 10px 35px;
+        }
+
+        body[data-lang="en"] .search-box i {
+            right: auto;
+            left: 12px;
+        }
+
+        .btn-export, .btn-add {
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-export {
+            background-color: #217346;
+        }
+
+            .btn-export:hover {
+                background-color: #1e5a37;
+                transform: translateY(-2px);
+            }
+
+        .btn-add {
+            background-color: var(--primary);
+        }
+
+            .btn-add:hover {
+                background-color: #0f1a36;
+                transform: translateY(-2px);
+            }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-align: right;
+            min-width: 1200px;
+        }
+
+        body[data-lang="en"] .admin-table {
+            text-align: left;
+        }
+
+        .admin-table th {
+            background-color: var(--dark);
+            color: white;
+            padding: 15px 20px;
+            font-size: 14px;
+            white-space: nowrap;
+            font-weight: 700;
+            border-bottom: 3px solid var(--secondary);
+        }
+
+            .admin-table th:first-child {
+                border-top-right-radius: 10px;
+            }
+
+            .admin-table th:last-child {
+                border-top-left-radius: 10px;
+            }
+
+        .admin-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: var(--dark);
+            vertical-align: middle;
+            transition: 0.2s;
+        }
+
+        .admin-table tr:hover td {
+            background-color: #f8fbfd;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            direction: ltr;
+            text-align: right;
+        }
+
+        body[data-lang="en"] .contact-info {
+            text-align: left;
+        }
+
+        .contact-phone {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 13px;
+        }
+
+        .contact-email {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .login-credentials {
+            background: #f4f7f6;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px dashed #bdc3c7;
+            font-family: monospace;
+            font-size: 13px;
+            direction: ltr;
+            text-align: left;
+            position: relative;
+        }
+
+            .login-credentials .pass-container {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-top: 4px;
+            }
+
+            .login-credentials span {
+                color: var(--danger);
+                font-weight: bold;
+            }
+
+            .login-credentials .toggle-pass-btn {
+                background: none;
+                border: none;
+                color: #7f8c8d;
+                cursor: pointer;
+                padding: 0;
+                font-size: 14px;
+            }
+
+                .login-credentials .toggle-pass-btn:hover {
+                    color: var(--dark);
+                }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            color: white;
+            white-space: nowrap;
+            display: inline-block;
+            text-align: center;
+            min-width: 110px;
+            transition: 0.3s;
+        }
+
+        .status-active {
+            background-color: var(--success);
+        }
+
+        .status-suspended {
+            background-color: #7f8c8d;
+        }
+
+        .perf-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .perf-number {
+            font-weight: 800;
+            font-size: 14px;
+            color: var(--dark);
+            min-width: 35px;
+        }
+
+        .perf-bg {
+            flex: 1;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 60px;
+        }
+
+        .perf-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .btn-edit {
+            background-color: var(--secondary);
+        }
+
+        .btn-suspend {
+            background-color: var(--danger);
+        }
+
+        .btn-reports {
+            background-color: var(--primary);
+        }
+
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-box {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            text-align: right;
+            border-top: 5px solid var(--primary);
+        }
+
+        body[data-lang="en"] .modal-box {
+            text-align: left;
+        }
+
+        .modal-box label {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: block;
+            color: var(--dark);
+        }
+
+        .modal-box input, .modal-box select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+            .modal-actions button {
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-weight: bold;
+                border: none;
+                cursor: pointer;
+                font-family: inherit;
+            }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #e74c3c;
+            color: white;
+        }
+
+        body.dark-mode .table-container {
+            background-color: #1A2235;
+            border: 1px solid #2C3E50;
+        }
+
+        body.dark-mode .admin-table td {
+            color: #E2E8F0;
+            border-bottom-color: #2C3E50;
+        }
+
+        body.dark-mode .admin-table tr:hover td {
+            background-color: #232d42;
+        }
+
+        body.dark-mode .search-box input {
+            background: #121620;
+            color: #E2E8F0;
+            border-color: #34495e;
+        }
+
+        body.dark-mode .login-credentials {
+            background: #121620;
+            border-color: #34495e;
+            color: #E2E8F0;
+        }
+
+        body.dark-mode .modal-box {
+            background: #1A2235;
+            color: #E2E8F0;
+            border-top: 5px solid var(--secondary);
+        }
+
+            body.dark-mode .modal-box label {
+                color: #E2E8F0;
+            }
+
+            body.dark-mode .modal-box input, body.dark-mode .modal-box select {
+                background: #121620;
+                color: #E2E8F0;
+                border-color: #34495e;
+            }
+
+        body.dark-mode .perf-number {
+            color: #FFFFFF !important;
+        }
+
+        body.dark-mode .perf-bg {
+            background: #34495e !important;
+        }
+
+        .admin-header {
+            background: var(--card-bg, white);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        body.dark-mode .admin-header {
+            background: #1A2235;
+            border: 1px solid #2C3E50;
+        }
+
+            body.dark-mode .admin-header h2, body.dark-mode .admin-header p, body.dark-mode .admin-header h2 i {
+                color: #FFFFFF !important;
+            }
+
+        body.dark-mode .modal-box h3, body.dark-mode .modal-box h3 i {
+            color: #FFFFFF !important;
+        }
+
+        #reportsContent {
+            max-height: 250px;
+            overflow-y: auto;
+            background: var(--light-gray, #f8f9fa);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: right;
+            color: var(--dark);
+        }
+
+        body.dark-mode #reportsContent {
+            background: #121620;
+            border-color: #34495e;
+            color: #E2E8F0;
+        }
+
+        body.dark-mode .report-item {
+            border-bottom-color: #34495e !important;
+        }
+    </style>
+</head>
+<body data-lang="ar">
+
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" onerror="this.onerror=null; this.src='https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg';" alt="Logo" class="logo-img" style="max-height: 50px;">
+            <h2>Lost & Found<br><span style="font-size: 13px; color: white; font-weight:500;">Management System</span></h2>
+        </div>
+        <ul>
+            <li><a href="{{ url_for('admin_dashboard') }}" class="auto-trans" data-ar="لوحة القيادة">لوحة القيادة</a></li>
+            <li><a href="{{ url_for('lost_reports_admin') }}" class="auto-trans" data-ar="المفقودات">المفقودات</a></li>
+            <li><a href="{{ url_for('found_reports_admin') }}" class="auto-trans" data-ar="المعثورات">المعثورات</a></li>
+            <li><a href="{{ url_for('matches') }}" class="auto-trans" data-ar="المطابقات">المطابقات</a></li>
+            <li><a href="{{ url_for('staff_manage') }}" class="active auto-trans" data-ar="الموظفين">الموظفين</a></li>
+
+            <div class="bottom-menu">
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
+            <li><a href="#" class="theme-toggle"><i class="fa-solid fa-moon"></i> <span class="auto-trans" data-ar="الوضع الليلي">الوضع الليلي</span></a></li>
+            <li><a href="#" class="lang-toggle"><i class="fa-solid fa-globe"></i> English</a></li>
+            <li><a href="{{ url_for('logout') }}" style="color: #ff7675;"><i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="auto-trans" data-ar="تسجيل خروج">تسجيل خروج</span></a></li>
+    </div>
+    </ul>
+    </div>
+
+    <div class="main-content">
+        <header class="admin-header">
+            <div>
+                <h2 style="color: var(--primary); font-weight: 800; margin: 0;"><i class="fa-solid fa-users-gear"></i> <span class="auto-trans" data-ar="إدارة الموظفين والصلاحيات">إدارة الموظفين والصلاحيات</span></h2>
+                <p style="color: gray; margin: 5px 0 0;" class="auto-trans" data-ar="إضافة، تجميد، وتوزيع الموظفين وتقييم أدائهم يدوياً">إضافة، تجميد، وتوزيع الموظفين وتقييم أدائهم يدوياً</p>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, msg in messages %}
+        <div style="background: {% if category == 'success' %}#2ecc71{% else %}#e74c3c{% endif %}; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-weight: bold;" class="auto-trans" data-ar="{{ msg }}">{{ msg }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="table-container">
+            <div class="table-header-bar">
+                <div class="header-actions">
+                    <button class="btn-add" id="openAddModalBtn"><i class="fa-solid fa-user-plus"></i> <span class="auto-trans" data-ar="إضافة موظف جديد">إضافة موظف جديد</span></button>
+                    <button class="btn-export" onclick="exportTableToExcel('staffTable', 'Staff_List')">
+                        <i class="fa-solid fa-file-excel"></i> <span class="auto-trans" data-ar="تصدير إلى Excel">تصدير إلى Excel</span>
+                    </button>
+                    <div class="search-box">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="ابحث باسم الموظف..." onkeyup="filterTable()">
+                    </div>
+                </div>
+            </div>
+
+            <table class="admin-table" id="staffTable">
+                <thead>
+                    <tr>
+                        <th class="auto-trans" data-ar="اسم الموظف">اسم الموظف</th>
+                        <th class="auto-trans" data-ar="معلومات التواصل">معلومات التواصل</th>
+                        <th class="auto-trans" data-ar="بيانات الدخول (الاسم والباسورد)">بيانات الدخول (الاسم والباسورد)</th>
+                        <th class="auto-trans" data-ar="المنصب / الصلاحية">المنصب / الصلاحية</th>
+                        <th class="auto-trans" data-ar="تقييم الإدارة">تقييم الإدارة</th>
+                        <th class="auto-trans" data-ar="حالة الدوام">حالة الدوام</th>
+                        <th class="no-export auto-trans" data-ar="إجراءات وتقارير">إجراءات وتقارير</th>
+                    </tr>
+                </thead>
+                <tbody id="staffTableBody">
+                    {% for staff in staff_list %}
+                    <tr>
+                        <td style="font-weight: bold;">
+                            <span class="auto-trans" data-ar="{{ staff.fullname }}">{{ staff.fullname }}</span><br>
+                            <span style="font-size: 11px; color: gray; font-family: monospace;">ID: {{ staff.emp_id }}</span>
+                        </td>
+                        <td>
+                            <div class="contact-info">
+                                <span class="contact-phone"><i class="fa-solid fa-phone"></i> {{ staff.phone if (staff.phone and staff.phone != 'None' and staff.phone != '') else 'غير محدد' }}</span>
+                                <span class="contact-email"><i class="fa-solid fa-envelope"></i> {{ staff.email if (staff.email and staff.email != 'None' and staff.email != '') else 'غير محدد' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="login-credentials">
+                                <span class="login-id">ID: {{ staff.emp_id }}</span>
+                                <div class="pass-container no-export">
+                                    <span>Pass: <span class="secret-pass" style="color:var(--danger)">••••</span><span class="real-pass" style="display:none; color:var(--danger)">1234</span></span>
+                                    <button class="toggle-pass-btn" onclick="toggleVisibility(this)"><i class="fa-solid fa-eye"></i></button>
+                                </div>
+                            </div>
+                        </td>
+                        <td><i class="fa-solid fa-shield-halved" style="color: var(--secondary);"></i> <span class="auto-trans" data-ar="{{ staff.role if staff.role else 'موظف أمن' }}">{{ staff.role if staff.role else 'موظف أمن' }}</span></td>
+
+                        <td>
+                            <div class="perf-wrapper">
+                                <span class="perf-number">{{ staff.performance }}%</span>
+                                <div class="perf-bg">
+                                    <div class="perf-fill" style="width: {{ staff.performance }}%; background: {% if staff.performance >= 85 %}var(--success){% elif staff.performance >= 60 %}#f39c12{% elif staff.performance > 0 %}var(--danger){% else %}#bdc3c7{% endif %};"></div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if staff.status == 'suspended' or staff.status == 'مجمد' %}
+                            <span class="status-badge status-suspended"><i class="fa-solid fa-ban"></i> <span class="auto-trans" data-ar="موقوف عن العمل">موقوف عن العمل</span></span>
+                            {% else %}
+                            <span class="status-badge status-active"><i class="fa-solid fa-circle-check"></i> <span class="auto-trans" data-ar="على رأس عمله">على رأس عمله</span></span>
+                            {% endif %}
+                        </td>
+                        <td class="no-export">
+                            <div class="action-btns">
+                                <button class="btn-icon btn-reports" title="عرض التقارير" onclick="showReports('{{ staff.emp_id }}')"><i class="fa-solid fa-list-check"></i></button>
+                                <button class="btn-icon btn-edit" id="editBtn_{{ staff.emp_id }}" title="تعديل الموظف والتقييم" onclick="openEditModal({{ staff.id }}, '{{ staff.fullname }}', '{{ staff.phone or '' }}', '{{ staff.email or '' }}', '{{ staff.role or '' }}', {{ staff.performance }})"><i class="fa-solid fa-pen-to-square"></i></button>
+
+                                <form action="{{ url_for('edit_staff', id=staff.id) }}" method="POST" style="margin: 0; display: inline;">
+                                    {% if staff.status == 'suspended' or staff.status == 'مجمد' %}
+                                    <input type="hidden" name="staffStatus" value="active">
+                                    <button type="submit" class="btn-icon btn-suspend" style="background-color: #2ecc71;" title="استعادة الموظف"><i class="fa-solid fa-rotate-left"></i></button>
+                                    {% else %}
+                                    <input type="hidden" name="staffStatus" value="suspended">
+                                    <button type="submit" class="btn-icon btn-suspend" title="تجميد الموظف"><i class="fa-solid fa-ban"></i></button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 30px; font-weight: bold; color: gray;" class="auto-trans" data-ar="لا يوجد موظفين مسجلين حالياً.">
+                            لا يوجد موظفين مسجلين حالياً.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addStaffModal">
+        <div class="modal-box">
+            <h3 style="color: var(--primary); margin-bottom: 20px; font-weight: 800;"><i class="fa-solid fa-user-tie"></i> <span class="auto-trans" data-ar="إضافة موظف جديد">إضافة موظف جديد</span></h3>
+            <form id="addStaffForm" action="{{ url_for('add_staff') }}" method="POST">
+                <label class="auto-trans" data-ar="الرقم الوظيفي (ID)">الرقم الوظيفي (ID)</label>
+                <input type="text" name="staffId" id="staffIdInput" placeholder="مثال: 104" required>
+
+                <label class="auto-trans" data-ar="اسم الموظف الكامل">اسم الموظف الكامل</label>
+                <input type="text" name="staffName" id="staffNameInput" placeholder="مثال: خالد عبدالله" pattern="^[\u0600-\u06FFa-zA-Z\s]+$" required>
+
+                <label class="auto-trans" data-ar="رقم الهاتف">رقم الهاتف</label>
+                <input type="text" name="staffPhone" id="staffPhoneInput" placeholder="079XXXXXXX" maxlength="10" required>
+
+                <label class="auto-trans" data-ar="البريد الإلكتروني">البريد الإلكتروني</label>
+                <input type="email" name="staffEmail" id="staffEmailInput" placeholder="employee@airport.com" required>
+
+                <label class="auto-trans" data-ar="المنصب">المنصب</label>
+                <select name="staffRole" id="staffRoleInput" required>
+                    <option value="" disabled selected class="auto-trans" data-ar="--- اختر المنصب ---">--- اختر المنصب ---</option>
+                    <option value="موظف أمن" class="auto-trans" data-ar="موظف أمن">موظف أمن</option>
+                    <option value="موظف أمتعة" class="auto-trans" data-ar="موظف أمتعة">موظف أمتعة</option>
+                    <option value="فريق الاسترجاع" class="auto-trans" data-ar="فريق الاسترجاع">فريق الاسترجاع</option>
+                </select>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-save"><i class="fa-solid fa-check"></i> <span class="auto-trans" data-ar="حفظ الموظف">حفظ الموظف</span></button>
+                    <button type="button" class="btn-cancel" id="closeModalBtn"><i class="fa-solid fa-times"></i> <span class="auto-trans" data-ar="إلغاء">إلغاء</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editStaffModal">
+        <div class="modal-box">
+            <h3 style="color: var(--primary); margin-bottom: 20px; font-weight: 800;"><i class="fa-solid fa-user-pen"></i> <span class="auto-trans" data-ar="تعديل بيانات الموظف">تعديل بيانات الموظف</span></h3>
+            <form id="editStaffForm" method="POST">
+                <label class="auto-trans" data-ar="اسم الموظف الكامل">اسم الموظف الكامل</label>
+                <input type="text" name="staffName" id="editStaffNameInput" pattern="^[\u0600-\u06FFa-zA-Z\s]+$" required>
+
+                <label class="auto-trans" data-ar="رقم الهاتف">رقم الهاتف</label>
+                <input type="text" name="staffPhone" id="editStaffPhoneInput" maxlength="10" required>
+
+                <label class="auto-trans" data-ar="البريد الإلكتروني">البريد الإلكتروني</label>
+                <input type="email" name="staffEmail" id="editStaffEmailInput" required>
+
+                <label class="auto-trans" data-ar="المنصب">المنصب</label>
+                <select name="staffRole" id="editStaffRoleInput" required>
+                    <option value="موظف أمن" class="auto-trans" data-ar="موظف أمن">موظف أمن</option>
+                    <option value="موظف أمتعة" class="auto-trans" data-ar="موظف أمتعة">موظف أمتعة</option>
+                    <option value="فريق الاسترجاع" class="auto-trans" data-ar="فريق الاسترجاع">فريق الاسترجاع</option>
+                </select>
+
+                <label class="auto-trans" data-ar="تقييم الأداء (%)">تقييم الأداء (%)</label>
+                <input type="number" name="staffPerformance" id="editStaffPerformanceInput" min="0" max="100" required>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-save"><i class="fa-solid fa-check"></i> <span class="auto-trans" data-ar="حفظ التعديلات">حفظ التعديلات</span></button>
+                    <button type="button" class="btn-cancel" onclick="document.getElementById('editStaffModal').style.display='none'"><i class="fa-solid fa-times"></i> <span class="auto-trans" data-ar="إلغاء">إلغاء</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="viewReportsModal">
+        <div class="modal-box">
+            <h3 style="color: var(--primary); margin-bottom: 15px;"><i class="fa-solid fa-list-check"></i> <span class="auto-trans" data-ar="تقارير إنجاز الموظف">تقارير إنجاز الموظف</span></h3>
+            <div id="reportsContent">
+                {% for rep in reports %}
+                <div class="report-item real-report" data-staff="{{ rep.staff_id }}" style="display:none; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px;">
+                    <strong style="color: var(--secondary);">{{ rep.date_submitted }}</strong><br>
+                    <span class="auto-trans" data-ar="{{ rep.report_text }}">{{ rep.report_text }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="document.getElementById('viewReportsModal').style.display='none'"><i class="fa-solid fa-times"></i> <span class="auto-trans" data-ar="إغلاق">إغلاق</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="{{ url_for('static', filename='js/global.js') }}"></script>
+
+    <script>
+        const localDict = {
+            "لوحة القيادة": "Dashboard", "المفقودات": "Lost Reports", "المعثورات": "Found Reports", "المطابقات": "Matches", "الموظفين": "Staff Mgmt",
+            "إدارة الموظفين والصلاحيات": "Staff & Roles Management", "إضافة، تجميد، وتوزيع الموظفين وتقييم أدائهم يدوياً": "Add, suspend, assign staff and evaluate performance manually",
+            "إضافة موظف جديد": "Add New Staff", "تصدير إلى Excel": "Export to Excel",
+            "الاسم:": "Name:", "اسم الموظف": "Staff Name", "معلومات التواصل": "Contact Info", "بيانات الدخول (الاسم والباسورد)": "Login Credentials (Name & Pass)", "المنصب / الصلاحية": "Role / Permission", "تقييم الإدارة": "Admin Rating", "حالة الدوام": "Status", "إجراءات وتقارير": "Actions & Reports",
+            "موظف أمن": "Security Guard", "موظف أمتعة": "Luggage Staff", "فريق الاسترجاع": "Recovery Team",
+            "على رأس عمله": "Active", "موقوف عن العمل": "Suspended",
+            "الرقم الوظيفي (ID)": "Employee ID", "اسم الموظف الكامل": "Full Name", "رقم الهاتف": "Phone Number", "البريد الإلكتروني": "Email Address", "المنصب": "Role", "--- اختر المنصب ---": "--- Select Role ---", "تقييم الأداء (%)": "Performance Rating (%)",
+            "تعديل بيانات الموظف": "Edit Staff Details", "حفظ الموظف": "Save Staff", "حفظ التعديلات": "Save Changes", "إلغاء": "Cancel",
+            "تقارير إنجاز الموظف": "Staff Performance Reports", "إغلاق": "Close", "لا توجد تقارير لهذا الموظف": "No reports available for this staff member",
+            "الوضع الليلي": "Dark Mode", "تسجيل خروج": "Logout",
+            "لا يوجد موظفين مسجلين حالياً.": "No staff registered currently.",
+            "غير محدد": "Not Specified",
+            "تمت إضافة الموظف بنجاح.": "Staff member added successfully.",
+            "موجود مسبقاً، يرجى اختيار رقم آخر.": "Already exists, please choose another ID.",
+            "تم تعديل بيانات الموظف بنجاح!": "Staff details updated successfully!",
+            "تم تعديل بيانات الموظف بنجاح": "Staff details updated successfully!",
+            "تم تجميد الموظف بنجاح!": "Staff member suspended successfully!",
+            "تم تجميد الموظف بنجاح": "Staff member suspended successfully!",
+            "تم استعادة الموظف بنجاح!": "Staff member restored successfully!",
+            "تم استعادة الموظف بنجاح": "Staff member restored successfully!",
+            "تم تحديث حالة الموظف بنجاح!": "Staff status updated successfully!",
+            "تم تحديث حالة الموظف بنجاح": "Staff status updated successfully!",
+            "تم الحفظ بنجاح!": "Saved successfully!",
+            "تم الحفظ بنجاح": "Saved successfully!",
+            "حدث خطأ أثناء التحديث!": "An error occurred during update!",
+            "حدث خطأ أثناء التحديث": "An error occurred during update!",
+            "نور عبد الله": "Noor Abdullah", "عمر الخطيب": "Omar Al-Khateeb", "سارة منصور": "Sara Mansour", "طارق زياد": "Tareq Zaid", "ليلى محمود": "Laila Mahmoud", "يوسف كمال": "Yousef Kamal",
+            "الرقم الوظيفي: 101 | [جولة تفتيشية ميدانية - صباحي (A)] التفاصيل: قام بجولة تفتيشية في صالة المغادرين وتم العثور على حقيبة وتأمينها.": "ID: 101 | [Field Inspection - Morning (A)] Details: Conducted inspection in departure hall, found and secured a bag.",
+            "الرقم الوظيفي: 101 | [مهام أخرى - صباحي (A)] التفاصيل: استلم وردية مسائية وأتم جرد المستودع بشكل كامل بدون أخطاء.": "ID: 101 | [Other Tasks - Morning (A)] Details: Took evening shift and completed full warehouse inventory with zero errors.",
+            "الرقم الوظيفي: 1002 | [تأمين مفقودات - مسائي (B)] التفاصيل: ساعد مسافراً في العثور على جواز سفره المفقود بالقرب من البوابة 14.": "ID: 1002 | [Securing Lost Items - Evening (B)] Details: Assisted passenger finding lost passport near Gate 14.",
+            "الرقم الوظيفي: 1003 | [تسليم عهدة / غرض - ليلي (C)] التفاصيل: تعاملت مع بلاغ فقدان هاتف محمول وتمكنت من تحديد موقعه وتسليمه.": "ID: 1003 | [Handover Item - Night (C)] Details: Handled lost phone report, located and returned it."
+        };
+
+        function applyStaffTranslations() {
+            let lang = localStorage.getItem('appLang') || document.body.getAttribute('data-lang') || 'ar';
+            document.querySelectorAll('.auto-trans').forEach(el => {
+                let arText = el.getAttribute('data-ar');
+                if (arText) {
+                    arText = arText.trim();
+                    let enText = localDict[arText] || arText;
+
+                    if (lang === 'en') {
+                        if (el.innerHTML.includes(arText)) {
+                            el.innerHTML = el.innerHTML.replace(arText, enText);
+                        } else if (el.textContent.trim() === arText) {
+                            el.textContent = enText;
+                        }
+                    } else {
+                        if (el.innerHTML.includes(enText)) {
+                            el.innerHTML = el.innerHTML.replace(enText, arText);
+                        } else if (el.textContent.trim() === enText) {
+                            el.textContent = arText;
+                        }
+                    }
+                }
+            });
+            let idInput = document.getElementById('staffIdInput');
+            if (idInput) idInput.placeholder = lang === 'en' ? 'e.g., 104' : 'مثال: 104';
+
+            let nameInput = document.getElementById('staffNameInput');
+            if (nameInput) nameInput.placeholder = lang === 'en' ? 'e.g., John Doe' : 'مثال: خالد عبدالله';
+
+            let phoneInput = document.getElementById('staffPhoneInput');
+            if (phoneInput) phoneInput.placeholder = lang === 'en' ? '079XXXXXXX' : '079XXXXXXX';
+
+            let emailInput = document.getElementById('staffEmailInput');
+            if (emailInput) emailInput.placeholder = lang === 'en' ? 'employee@airport.com' : 'employee@airport.com';
+
+            let searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.placeholder = lang === 'en' ? 'Search by name or ID...' : 'ابحث باسم الموظف أو الرقم...';
+
+            let reportsContent = document.getElementById('reportsContent');
+            if (reportsContent) {
+                reportsContent.style.textAlign = lang === 'en' ? 'left' : 'right';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyStaffTranslations();
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'data-lang') {
+                        applyStaffTranslations();
+                    }
+                });
+            });
+            observer.observe(document.body, { attributes: true, attributeFilter: ['data-lang'] });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('edit_id');
+            if (editId) {
+                const editBtn = document.getElementById('editBtn_' + editId);
+                if (editBtn) {
+                    editBtn.click();
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('addStaffModal');
+            const openBtn = document.getElementById('openAddModalBtn');
+            const closeBtn = document.getElementById('closeModalBtn');
+            openBtn.addEventListener('click', () => modal.style.display = 'flex');
+            closeBtn.addEventListener('click', () => modal.style.display = 'none');
+            const nameInput = document.getElementById('staffNameInput');
+            if (nameInput) { nameInput.addEventListener('input', function () { this.value = this.value.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, ''); }); }
+            const phoneInput = document.getElementById('staffPhoneInput');
+            if (phoneInput) { phoneInput.addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, ''); }); }
+            const idInput = document.getElementById('staffIdInput');
+            if (idInput) { idInput.addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, ''); }); }
+        });
+
+        function openEditModal(id, name, phone, email, role, performance) {
+            document.getElementById('editStaffForm').action = '/edit_staff/' + id;
+            document.getElementById('editStaffNameInput').value = name;
+            document.getElementById('editStaffPhoneInput').value = (phone !== 'None' && phone !== '') ? phone : '';
+            document.getElementById('editStaffEmailInput').value = (email !== 'None' && email !== '') ? email : '';
+            document.getElementById('editStaffPerformanceInput').value = performance;
+
+            let roleSelect = document.getElementById('editStaffRoleInput');
+            if (role && role !== 'None') { roleSelect.value = role; } else { roleSelect.value = 'موظف أمن'; }
+            document.getElementById('editStaffModal').style.display = 'flex';
+        }
+
+        function toggleVisibility(btn) {
+            const container = btn.closest('.pass-container');
+            const secretPass = container.querySelector('.secret-pass');
+            const realPass = container.querySelector('.real-pass');
+            const icon = btn.querySelector('i');
+            if (secretPass.style.display !== 'none') {
+                secretPass.style.display = 'none'; realPass.style.display = 'inline'; icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                secretPass.style.display = 'inline'; realPass.style.display = 'none'; icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function showReports(empId) {
+            let container = document.getElementById('reportsContent');
+            let realItems = document.querySelectorAll('.real-report');
+            let hasRealReports = false;
+
+            realItems.forEach(item => {
+                if (item.getAttribute('data-staff') === empId) {
+                    item.style.display = 'block';
+                    hasRealReports = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            let oldMsg = document.getElementById('no-reports-msg');
+            if (oldMsg) oldMsg.remove();
+
+            if (!hasRealReports) {
+                let msg = document.createElement('div');
+                msg.id = 'no-reports-msg';
+                msg.style.textAlign = 'center';
+                msg.style.padding = '20px';
+                msg.style.color = '#7f8c8d';
+                msg.style.fontWeight = 'bold';
+                msg.innerHTML = '<span class="auto-trans" data-ar="لا توجد تقارير لهذا الموظف">لا توجد تقارير لهذا الموظف</span>';
+                container.appendChild(msg);
+            }
+
+            applyStaffTranslations();
+            document.getElementById('viewReportsModal').style.display = 'flex';
+        }
+
+        function filterTable() {
+            let input = document.getElementById("searchInput");
+            let filter = input.value.toLowerCase();
+            let tbody = document.querySelector("#staffTable tbody");
+            let tr = tbody.getElementsByTagName("tr");
+
+            for (let i = 0; i < tr.length; i++) {
+                if (tr[i].querySelector("td[colspan]")) continue;
+
+                let nameCell = tr[i].getElementsByTagName("td")[0];
+                let loginCell = tr[i].getElementsByTagName("td")[2];
+
+                if (nameCell || loginCell) {
+                    let nameText = nameCell.textContent || nameCell.innerText;
+                    let loginText = loginCell.textContent || loginCell.innerText;
+
+                    if (nameText.toLowerCase().indexOf(filter) > -1 || loginText.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        function exportTableToExcel(tableID, filename = '') {
+            var table = document.getElementById(tableID);
+            var clonedTable = table.cloneNode(true);
+
+            var elementsToRemove = clonedTable.querySelectorAll('.no-export');
+            elementsToRemove.forEach(function (el) { el.parentNode.removeChild(el); });
+
+            var loginCells = clonedTable.querySelectorAll('td:nth-child(3)');
+            loginCells.forEach(function (cell) {
+                var loginId = cell.querySelector('.login-id');
+                if (loginId) {
+                    cell.innerHTML = loginId.innerText;
+                }
+            });
+
+            var wb = XLSX.utils.table_to_book(clonedTable, { sheet: "Staff" });
+            filename = filename ? filename + '.xlsx' : 'staff_data.xlsx';
+            XLSX.writeFile(wb, filename);
+        }
+    </script>
+</body>
+</html>

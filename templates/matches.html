@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - AI Matches</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <style>
+        .table-container {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            overflow-x: auto;
+            margin-top: 15px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .table-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            position: relative;
+            max-width: 300px;
+            width: 100%;
+            margin-right: 15px;
+        }
+
+            .search-box input {
+                width: 100%;
+                padding: 10px 35px 10px 15px;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                font-family: inherit;
+                font-size: 14px;
+                outline: none;
+            }
+
+            .search-box i {
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #7f8c8d;
+            }
+
+        body[data-lang="en"] .search-box input {
+            padding: 10px 15px 10px 35px;
+        }
+
+        body[data-lang="en"] .search-box i {
+            right: auto;
+            left: 12px;
+        }
+
+        .btn-export {
+            background-color: #217346;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-align: right;
+            min-width: 1000px;
+        }
+
+        body[data-lang="en"] .admin-table {
+            text-align: left;
+        }
+
+        .admin-table th {
+            background-color: #34495e;
+            color: white;
+            padding: 15px 20px;
+            font-size: 14px;
+            white-space: nowrap;
+            font-weight: 700;
+            border-bottom: 3px solid #2c3e50;
+        }
+
+            .admin-table th:first-child {
+                border-top-right-radius: 10px;
+            }
+
+            .admin-table th:last-child {
+                border-top-left-radius: 10px;
+            }
+
+        .admin-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: var(--dark);
+            vertical-align: middle;
+            transition: 0.2s;
+        }
+
+        .admin-table tr:hover td {
+            background-color: #f8fbfd;
+        }
+
+        .match-score {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 13px;
+            color: white;
+            text-align: center;
+            display: inline-block;
+            min-width: 60px;
+        }
+
+        .score-high {
+            background-color: var(--success);
+        }
+
+        .score-med {
+            background-color: #f39c12;
+        }
+
+        .score-low {
+            background-color: var(--danger);
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            color: white;
+            white-space: nowrap;
+            display: inline-block;
+            text-align: center;
+            min-width: 110px;
+        }
+
+        .status-pending {
+            background-color: #f39c12;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            padding: 0;
+        }
+
+        .btn-approve {
+            background-color: var(--success);
+        }
+
+        .btn-reject {
+            background-color: var(--danger);
+        }
+
+        .btn-view {
+            background-color: var(--primary);
+        }
+
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-box {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            padding: 30px 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .compare-circle {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            justify-content: center;
+        }
+
+        .btn-cancel {
+            background-color: var(--dark);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+            .btn-cancel:hover {
+                background-color: #16264c;
+                transform: translateY(-2px);
+            }
+
+        body.dark-mode .table-container {
+            background-color: #1A2235;
+            border: 1px solid #2C3E50;
+        }
+
+        body.dark-mode .admin-table td {
+            color: #E2E8F0;
+            border-bottom-color: #2C3E50;
+        }
+
+        body.dark-mode .admin-table tr:hover td {
+            background-color: #232d42;
+        }
+
+        body.dark-mode .search-box input {
+            background: #121620;
+            color: #E2E8F0;
+            border-color: #34495e;
+        }
+
+        body.dark-mode .modal-box {
+            background-color: #1A2235;
+            color: white;
+        }
+
+            body.dark-mode .table-header-bar h4,
+            body.dark-mode .admin-header h2,
+            body.dark-mode .admin-header p,
+            body.dark-mode .modal-box h3,
+            body.dark-mode .admin-header h2 i,
+            body.dark-mode .modal-box h3 i,
+            body.dark-mode .modal-box p {
+                color: #FFFFFF !important;
+            }
+
+        body.dark-mode #cmpLost {
+            color: #ff6b6b !important;
+        }
+
+        body.dark-mode #cmpFound {
+            color: #2ecc71 !important;
+        }
+    </style>
+</head>
+<body data-lang="ar">
+
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" onerror="this.onerror=null; this.src='https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg';" alt="Logo" class="logo-img">
+            <h2>Lost & Found<br><span style="font-size: 13px; color: white; font-weight:500;">Management System</span></h2>
+        </div>
+        <ul>
+            <li><a href="{{ url_for('admin_dashboard') }}" class="auto-trans" data-ar="لوحة القيادة">لوحة القيادة</a></li>
+            <li><a href="{{ url_for('lost_reports_admin') }}" class="auto-trans" data-ar="المفقودات">المفقودات</a></li>
+            <li><a href="{{ url_for('found_reports_admin') }}" class="auto-trans" data-ar="المعثورات">المعثورات</a></li>
+            <li><a href="{{ url_for('matches') }}" class="active auto-trans" data-ar="المطابقات">المطابقات</a></li>
+            <li><a href="{{ url_for('staff_manage') }}" class="auto-trans" data-ar="الموظفين">الموظفين</a></li>
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+            <li><a href="#" class="theme-toggle"><i class="fa-solid fa-moon"></i> <span class="auto-trans" data-ar="الوضع الليلي">الوضع الليلي</span></a></li>
+            <li><a href="#" class="lang-toggle"><i class="fa-solid fa-globe"></i> English</a></li>
+            <li><a href="{{ url_for('logout') }}" style="color: #ff7675;"><i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="auto-trans" data-ar="تسجيل خروج">تسجيل خروج</span></a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <header class="admin-header">
+            <div>
+                <h2><i class="fa-solid fa-robot" style="color: #34495e;"></i> <span class="auto-trans" data-ar="المطابقات الذكية">المطابقات الذكية</span></h2>
+                <p class="auto-trans" data-ar="اقتراحات النظام لربط بلاغات المفقودات مع الأغراض المعثور عليها">اقتراحات النظام لربط بلاغات المفقودات مع الأغراض المعثور عليها</p>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div style="background: {% if category == 'success' %}#2ecc71{% else %}#e74c3c{% endif %}; color: white; padding: 15px; border-radius: 10px; margin-top: 15px; font-weight: bold; text-align: center;">
+            <span class="auto-trans" data-ar="{{ message }}">{{ message }}</span>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="table-container">
+            <div class="table-header-bar">
+                <h4 style="color: #34495e; font-weight: 800; margin: 0;" class="auto-trans" data-ar="المطابقات المقترحة">المطابقات المقترحة</h4>
+                <div style="display: flex; align-items: center;">
+                    <div class="search-box">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="ابحث برقم المطابقة..." onkeyup="filterTable()">
+                    </div>
+                    <button class="btn-export" onclick="exportTableToExcel('matchesTable', 'Matches_Reports')">
+                        <i class="fa-solid fa-file-excel"></i> <span class="auto-trans" data-ar="تصدير إلى Excel">تصدير إلى Excel</span>
+                    </button>
+                </div>
+            </div>
+
+            <table class="admin-table" id="matchesTable">
+                <thead>
+                    <tr>
+                        <th class="auto-trans" data-ar="رقم المطابقة">رقم المطابقة</th>
+                        <th class="auto-trans" data-ar="رقم بلاغ الفقدان">رقم بلاغ الفقدان</th>
+                        <th class="auto-trans" data-ar="رقم غرض المستودع">رقم غرض المستودع</th>
+                        <th class="auto-trans" data-ar="الاسم والفئة">الاسم والفئة</th>
+                        <th class="auto-trans" data-ar="نسبة التطابق">نسبة التطابق</th>
+                        <th class="auto-trans" data-ar="حالة المراجعة">حالة المراجعة</th>
+                        <th class="no-export auto-trans" data-ar="قرار الموظف">قرار الموظف</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for match in matches %}
+                    <tr id="row-{{ match.match_id }}">
+                        <td><strong>#MT-{{ match.match_id }}</strong></td>
+                        <td style="color: var(--danger); font-weight:bold;">#LST-{{ match.lost.id }}</td>
+                        <td style="color: var(--success); font-weight:bold;">#FND-{{ match.found.id }}</td>
+                        <td>
+                            <span class="auto-trans" data-ar="{{ match.lost.item_name }}">{{ match.lost.item_name }}</span> <br>
+                            <span style="font-size: 12px; color: gray;" class="auto-trans" data-ar="{{ match.lost.category }}">{{ match.lost.category }}</span>
+                        </td>
+                        <td>
+                            <span class="match-score {% if match.score >= 80 %}score-high{% elif match.score >= 60 %}score-med{% else %}score-low{% endif %}">
+                                {{ match.score }}%
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-pending"><i class="fa-solid fa-clock"></i> <span class="auto-trans" data-ar="قيد المراجعة">قيد المراجعة</span></span>
+                        </td>
+                        <td class="no-export">
+                            <div class="action-btns">
+                                <form action="{{ url_for('approve_match', lost_id=match.lost.id, found_id=match.found.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn-icon btn-approve" title="Approve"><i class="fa-solid fa-check"></i></button>
+                                </form>
+                                <form action="{{ url_for('reject_match', lost_id=match.lost.id, found_id=match.found.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn-icon btn-reject" title="Reject"><i class="fa-solid fa-xmark"></i></button>
+                                </form>
+                                <button type="button" class="btn-icon btn-view" title="Compare" onclick="compareMatch('{{ match.lost.item_name }}', '{{ match.found.item_name }}', {{ match.score }})"><i class="fa-solid fa-code-compare"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; font-weight: bold; color: gray;" class="auto-trans" data-ar="لا توجد مطابقات مقترحة حالياً. بانتظار إدخال بيانات مفقودات ومعثورات جديدة.">
+                            لا توجد مطابقات مقترحة حالياً. بانتظار إدخال بيانات مفقودات ومعثورات جديدة.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="compareModal">
+        <div class="modal-box">
+            <h3 style="color: #34495e; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px;"><i class="fa-solid fa-microchip"></i> <span class="auto-trans" data-ar="تحليل الذكاء الاصطناعي">تحليل الذكاء الاصطناعي</span></h3>
+
+            <div id="compareCircle" class="compare-circle score-high">90%</div>
+
+            <p style="font-weight: 800; margin-bottom: 5px; font-size: 15px;" class="auto-trans" data-ar="الغرض المفقود:">الغرض المفقود:</p>
+            <p id="cmpLost" class="auto-trans" data-ar="" style="color: var(--danger); margin-bottom: 20px; font-size: 16px; font-weight: bold;"></p>
+
+            <p style="font-weight: 800; margin-bottom: 5px; font-size: 15px;" class="auto-trans" data-ar="الغرض المعثور عليه:">الغرض المعثور عليه:</p>
+            <p id="cmpFound" class="auto-trans" data-ar="" style="color: var(--success); margin-bottom: 25px; font-size: 16px; font-weight: bold;"></p>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="document.getElementById('compareModal').style.display='none'">
+                    <span class="auto-trans" data-ar="إغلاق">إغلاق</span> <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="{{ url_for('static', filename='js/global.js') }}"></script>
+
+    <script>
+        const localDict = {
+            'الإلكترونيات': 'Electronics', 'متعلقات شخصية': 'Personal Items', 'الوثائق الرسمية': 'Documents', 'الحقائب والأمتعة': 'Bags & Luggage',
+            'لوحة القيادة': 'Dashboard', 'المفقودات': 'Lost Reports', 'المعثورات': 'Found Reports', 'المطابقات': 'Matches', 'الموظفين': 'Staff Mgmt',
+            'المطابقات الذكية': 'Smart Matches', 'اقتراحات النظام لربط بلاغات المفقودات مع الأغراض المعثور عليها': 'System suggestions to link lost reports with found items',
+            'المطابقات المقترحة': 'Proposed Matches', 'تصدير إلى Excel': 'Export to Excel',
+            'رقم المطابقة': 'Match ID', 'رقم بلاغ الفقدان': 'Lost Report ID', 'رقم غرض المستودع': 'Found Item ID', 'الاسم والفئة': 'Name & Category',
+            'نسبة التطابق': 'Match Score', 'حالة المراجعة': 'Review Status', 'قرار الموظف': 'Decision',
+            'قيد المراجعة': 'Under Review', 'تم التأكيد': 'Approved', 'مرفوض': 'Rejected',
+            'تحليل الذكاء الاصطناعي': 'AI Analysis', 'الغرض المفقود:': 'Lost Item:', 'الغرض المعثور عليه:': 'Found Item:', 'إغلاق': 'Close',
+            'الوضع الليلي': 'Dark Mode', 'تسجيل خروج': 'Logout',
+            'لا توجد مطابقات مقترحة حالياً. بانتظار إدخال بيانات مفقودات ومعثورات جديدة.': 'No proposed matches currently. Waiting for new lost and found data.',
+            'تم تأكيد المطابقة وتحديث حالة الأغراض بنجاح!': 'Match approved and items status updated to Delivered successfully!',
+            'تم رفض المطابقة وإزالتها من القائمة.': 'Match rejected and removed from the list.',
+
+            'iPhone 17 أبيض، عليه كفر شفاف فيه خدوش خفيفة.': 'White iPhone 17, with a clear case having slight scratches.',
+            'حقيبة يد سوداء صغيرة تحتوي على محفظة وبطاقات بنكية.': 'Small black handbag containing a wallet and bank cards.',
+            'سماعات AirPods برو داخل علبة بيضاء.': 'AirPods Pro inside a white case.',
+            'لابتوب Dell رمادي داخل شنطة سوداء.': 'Grey Dell laptop inside a black bag.',
+            'جواز سفر أردني باسم محمد خالد.': 'Jordanian passport in the name of Mohammad Khaled.',
+            'ساعة ذكية Apple Watch سوداء.': 'Black Apple Watch smartwatch.',
+            'حقيبة سفر كبيرة لون أزرق عليها شريط أحمر.': 'Large blue suitcase with a red ribbon.',
+            'هاتف سامسونج Galaxy S23 أسود.': 'Black Samsung Galaxy S23 phone.',
+            'نظارة شمس Ray-Ban سوداء.': 'Black Ray-Ban sunglasses.',
+            'محفظة جلد بني تحتوي على هوية ورخصة.': 'Brown leather wallet containing ID and license.',
+            'جهاز iPad فضي.': 'Silver iPad device.',
+            'حقيبة ظهر رمادية تحتوي على لابتوب وكتب.': 'Grey backpack containing a laptop and books.',
+            'هاتف Google Pixel 8 أسود مع كفر أزرق.': 'Black Google Pixel 8 phone with a blue case.',
+            'حقيبة لابتوب سوداء تحتوي على شاحن وماوس': 'Black laptop bag containing a charger and mouse.',
+            'سماعات Beats حمراء لاسلكية.': 'Red wireless Beats headphones.',
+            'ساعة كلاسيكية فضية بسوار معدني': 'Silver classic watch with a metal band.',
+            'نظارة طبية بإطار أسود داخل علبة.': 'Prescription glasses with a black frame inside a case.',
+            'جهاز Nintendo Switch مع حقيبة صغيرة': 'Nintendo Switch device with a small bag.',
+
+            'تم العثور على هاتف أبيض حديث داخل كفر شفاف.': 'Found a modern white phone inside a clear case.',
+            'حقيبة نسائية صغيرة سوداء تحتوي على بطاقات ومحفظة.': 'Small black women\'s handbag containing cards and a wallet.',
+            'علبة سماعات لاسلكية بيضاء.': 'White wireless earphones case.',
+            'جهاز لابتوب داخل حقيبة سوداء.': 'Laptop device inside a black bag.',
+            'وثيقة سفر (Passport) باسم شخص.': 'Travel document (Passport) in someone\'s name.',
+            'ساعة يد ذكية سوداء.': 'Black smartwatch.',
+            'شنطة سفر زرقاء كبيرة مع شريط ملون.': 'Large blue travel bag with a colored ribbon.',
+            'هاتف ذكي أسود.': 'Black smartphone.',
+            'نظارات شمسية داكنة.': 'Dark sunglasses.',
+            'هاتف ذكي أسود داخل غطاء أزرق.': 'Black smartphone inside a blue cover.',
+            'حقيبة كمبيوتر محمولة بداخلها ملحقات.': 'Laptop bag with accessories inside.',
+            'سماعات رأس لاسلكية باللون الأحمر.': 'Red wireless headphones.',
+            'ساعة يد فضية تقليدية.': 'Traditional silver wristwatch.',
+            'نظارات طبية بإطار داكن داخل حافظة.': 'Prescription glasses with a dark frame inside a case.',
+            'جهاز ألعاب محمول مع حقيبة': 'Portable gaming device with a bag.'
+        };
+
+        function applyMatchesTranslations() {
+            let lang = localStorage.getItem('appLang') || document.body.getAttribute('data-lang') || 'ar';
+
+            document.querySelectorAll('.auto-trans').forEach(el => {
+                let arText = el.getAttribute('data-ar');
+                if (arText) {
+                    arText = arText.trim();
+                    let enText = localDict[arText] || arText;
+
+                    if (lang === 'en') {
+                        if (el.innerHTML.includes(arText)) {
+                            el.innerHTML = el.innerHTML.replace(arText, enText);
+                        } else if (el.textContent.trim() === arText) {
+                            el.textContent = enText;
+                        }
+                    } else {
+                        if (el.innerHTML.includes(enText)) {
+                            el.innerHTML = el.innerHTML.replace(enText, arText);
+                        } else if (el.textContent.trim() === enText) {
+                            el.textContent = arText;
+                        }
+                    }
+                }
+            });
+
+            let searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.placeholder = lang === 'en' ? 'Search by Match ID...' : 'ابحث برقم المطابقة...';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyMatchesTranslations();
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'data-lang') {
+                        applyMatchesTranslations();
+                    }
+                });
+            });
+            observer.observe(document.body, { attributes: true, attributeFilter: ['data-lang'] });
+        });
+
+        function compareMatch(lostName, foundName, score) {
+            let lostEl = document.getElementById('cmpLost');
+            lostEl.setAttribute('data-ar', lostName);
+            lostEl.innerText = lostName;
+
+            let foundEl = document.getElementById('cmpFound');
+            foundEl.setAttribute('data-ar', foundName);
+            foundEl.innerText = foundName;
+
+            let circle = document.getElementById('compareCircle');
+            circle.innerText = score + '%';
+
+            circle.className = 'compare-circle';
+            if (score >= 80) circle.classList.add('score-high');
+            else if (score >= 60) circle.classList.add('score-med');
+            else circle.classList.add('score-low');
+
+            applyMatchesTranslations();
+            document.getElementById('compareModal').style.display = 'flex';
+        }
+
+        function filterTable() {
+            let input = document.getElementById("searchInput");
+            let filter = input.value.toLowerCase();
+            let tbody = document.querySelector("#matchesTable tbody");
+            let tr = tbody.getElementsByTagName("tr");
+
+            for (let i = 0; i < tr.length; i++) {
+                if (tr[i].querySelector("td[colspan]")) continue;
+                let matchIdCell = tr[i].getElementsByTagName("td")[0];
+                if (matchIdCell) {
+                    let textValue = matchIdCell.textContent || matchIdCell.innerText;
+                    if (textValue.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        function exportTableToExcel(tableID, filename = '') {
+            var table = document.getElementById(tableID);
+            var clonedTable = table.cloneNode(true);
+
+            var elementsToRemove = clonedTable.querySelectorAll('.no-export');
+            elementsToRemove.forEach(function (el) { el.parentNode.removeChild(el); });
+
+            var wb = XLSX.utils.table_to_book(clonedTable, { sheet: "Sheet JS" });
+            filename = filename ? filename + '.xlsx' : 'excel_data.xlsx';
+            XLSX.writeFile(wb, filename);
+        }
+    </script>
+</body>
+</html>

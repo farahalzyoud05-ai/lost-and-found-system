@@ -1,0 +1,222 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Montserrat:wght@400;600;700;800&display=swap');
+
+:root {
+    --brand-primary: #244163;   /* أزرق اللوجو */
+    --brand-accent: #E28327;    /* برتقالي اللوجو */
+    --bg-light: #F4F7F9;
+    --white: #FFFFFF;
+    --text-dark: #122136;
+    --border-color: #E2E8F0;
+}
+
+body {
+    font-family: 'Montserrat', 'Cairo', sans-serif;
+    background: var(--bg-light);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== Navbar البسيطة للصفحات الداخلية ===== */
+.top-nav {
+    background: var(--white);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(36, 65, 99, 0.08);
+    border-bottom: 3px solid var(--brand-accent);
+}
+
+.top-nav .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.top-nav .logo-area img {
+    width: 45px;
+    border-radius: 8px;
+}
+
+.top-nav .logo-area span {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--brand-primary);
+}
+
+.back-home {
+    color: var(--brand-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.back-home:hover {
+    color: var(--brand-accent);
+}
+
+/* ===== Main Content ===== */
+.main-content {
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ===== Header ===== */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+header h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--brand-primary);
+    margin: 0;
+}
+
+.notifications {
+    position: relative;
+    font-size: 24px;
+    color: var(--brand-primary);
+    cursor: pointer;
+}
+
+.badge {
+    background: var(--brand-accent);
+    color: var(--white);
+    border-radius: 50%;
+    padding: 3px 6px;
+    font-size: 11px;
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    font-weight: bold;
+}
+
+/* ===== Form Section ===== */
+.form-section, .table-section {
+    background: var(--white);
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(36, 65, 99, 0.06);
+    margin-bottom: 30px;
+    border-top: 4px solid var(--brand-primary);
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+.form-section h3, .table-section h3 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-weight: 700;
+    color: var(--brand-primary);
+    font-size: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+form label {
+    font-weight: 700;
+    color: var(--brand-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+form label i { color: var(--brand-accent); }
+
+form input, form select, form textarea {
+    padding: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.3s;
+    background-color: var(--bg-light);
+}
+
+form input:focus, form select:focus, form textarea:focus {
+    border-color: var(--brand-accent);
+    background-color: var(--white);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(226, 131, 39, 0.15);
+}
+
+.time-range {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.time-range input { width: 140px; text-align: center; }
+.time-range span { font-weight: 600; color: var(--text-dark); }
+
+/* ===== Buttons ===== */
+form button, .export button {
+    background: var(--brand-accent);
+    color: var(--white);
+    border: none;
+    padding: 15px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 16px;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    font-family: inherit;
+}
+
+form button:hover, .export button:hover {
+    background: var(--brand-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(36, 65, 99, 0.2);
+}
+
+/* ===== Table ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table th, table td {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+    text-align: left;
+}
+html[dir="rtl"] table th, html[dir="rtl"] table td { text-align: right; }
+
+table th {
+    background: rgba(36, 65, 99, 0.05);
+    font-weight: 700;
+    color: var(--brand-primary);
+}
+
+.color-box {
+    width: 25px;
+    height: 25px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    display: inline-block;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}

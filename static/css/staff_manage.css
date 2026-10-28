@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Montserrat:wght@400;600;700&display=swap');
+
+/* استخدم نفس متغيرات الألوان والـ Sidebar والـ Header والـ Table من admin_dashboard.css للتوحيد */
+/* سأضيف هنا فقط التنسيقات الخاصة بفورم الموظفين والأزرار */
+
+.staff-form-container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(36, 65, 99, 0.05);
+    margin-bottom: 30px;
+    border-top: 4px solid #244163; /* كحلي اللوجو */
+}
+
+.staff-form-container h3 {
+    color: #244163;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    font-weight: 700;
+    color: #244163;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    outline: none;
+    font-family: inherit;
+    transition: 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #E28327; /* برتقالي اللوجو */
+    box-shadow: 0 0 0 3px rgba(226, 131, 39, 0.15);
+}
+
+.buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-add {
+    background: #244163;
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    flex: 1;
+}
+.btn-add:hover { background: #122136; transform: translateY(-2px); }
+
+.btn-remove-main {
+    background: transparent;
+    color: #e63946;
+    border: 2px solid #e63946;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    flex: 1;
+}
+.btn-remove-main:hover { background: #e63946; color: #fff; }
+
+/* أزرار الجدول */
+.add-btn { background: #E28327; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+.add-btn:hover { background: #c97120; }
+
+.remove-btn { background: #e63946; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+.remove-btn:hover { background: #c1121f; }
+
+.status-active { color: #2a9d8f; font-weight: bold; }
+.status-removed { color: #e63946; font-weight: bold; }
+
+/* Dark Mode Additions */
+body.dark-mode .staff-form-container { background: #122136; border-color: #E28327; }
+body.dark-mode .staff-form-container h3, body.dark-mode .input-group label { color: #E28327; }
+body.dark-mode .input-group input { background: #0A111A; color: #fff; border-color: #244163; }

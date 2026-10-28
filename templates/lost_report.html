@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Lost Item - Lost & Found</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <style>
+        body {
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .report-header {
+            background: linear-gradient(135deg, var(--primary), #2C3E50);
+            color: white;
+            padding: 70px 0 60px;
+            text-align: center;
+        }
+
+        .form-container {
+            background: var(--white);
+            border-radius: 25px;
+            padding: 50px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+            margin-top: -60px;
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 10;
+            border: none;
+        }
+
+        .section-title {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--secondary);
+            font-size: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid transparent;
+            background-color: #f0f3f5;
+            transition: 0.3s;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--white);
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15);
+            outline: none;
+        }
+
+        body[data-lang="ar"] .form-label, body[data-lang="ar"] .form-control, body[data-lang="ar"] .form-select {
+            text-align: right;
+        }
+
+        body[data-lang="en"] .form-label, body[data-lang="en"] .form-control, body[data-lang="en"] .form-select {
+            text-align: left;
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(26, 43, 76, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(26, 43, 76, 0.3);
+            background: var(--secondary);
+            color: var(--primary);
+        }
+
+        .btn-pdf {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-pdf:hover {
+            transform: translateY(-3px);
+            background: #c0392b;
+            box-shadow: 0 12px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        footer {
+            background: var(--primary);
+            color: white;
+            padding: 50px 0 20px;
+            margin-top: auto;
+        }
+
+        .social-icons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            margin: 0 5px;
+            font-size: 18px;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        .social-icons a:hover {
+            background: var(--secondary);
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .navbar-container-custom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .logo-img {
+            max-height: 50px;
+            width: auto;
+            border-radius: 50%;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .form-container {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                margin: 0;
+                padding: 20px;
+            }
+        }
+
+        body.dark-mode {
+            background-color: #121620;
+        }
+
+        body.dark-mode .form-container {
+            background-color: #1A2235;
+            border: 1px solid #2C3E50;
+        }
+
+        body.dark-mode .section-title {
+            color: #FFFFFF;
+        }
+
+        body.dark-mode .form-label {
+            color: #E2E8F0 !important;
+        }
+
+        body.dark-mode .form-control, 
+        body.dark-mode .form-select {
+            background-color: #121620;
+            border-color: #34495e;
+            color: #FFFFFF !important;
+        }
+
+        body.dark-mode .form-control::placeholder {
+            color: #888;
+        }
+
+        body.dark-mode .report-header {
+            background: linear-gradient(135deg, #0F131D, #1A2235);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body:not(.light-mode) {
+                background-color: #121620;
+            }
+            body:not(.light-mode) .form-container {
+                background-color: #1A2235;
+                border: 1px solid #2C3E50;
+            }
+            body:not(.light-mode) .section-title {
+                color: #FFFFFF;
+            }
+            body:not(.light-mode) .form-label {
+                color: #E2E8F0 !important;
+            }
+            body:not(.light-mode) .form-control, 
+            body:not(.light-mode) .form-select {
+                background-color: #121620;
+                border-color: #34495e;
+                color: #FFFFFF !important;
+            }
+            body:not(.light-mode) .report-header {
+                background: linear-gradient(135deg, #0F131D, #1A2235);
+            }
+        }
+    </style>
+</head>
+<body data-lang="ar">
+
+    <nav class="navbar navbar-expand-lg sticky-top bg-white shadow-sm no-print" id="mainNav">
+        <div class="container navbar-container-custom">
+            <a class="navbar-brand d-flex align-items-center m-0" href="{{ url_for('user_home') }}">
+                <img src="{{ url_for('static', filename='logo.jpg') }}" onerror="this.onerror=null; this.src='https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg';" alt="Logo" class="logo-img me-2 ms-2">
+                <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                    <span style="color: var(--primary); font-weight: 800; font-size: 1.1rem;">Lost & Found</span>
+                    <span style="color: gray; font-weight: 600; font-size: 0.7rem; letter-spacing: 1px;">MANAGEMENT SYSTEM</span>
+                </div>
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ url_for('user_home') }}" class="nav-link fw-bold" style="color: var(--primary); text-decoration:none;"><i class="fa-solid fa-user-circle"></i> <span data-i18n="my_profile">حسابي</span></a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm fw-bold" style="border-radius:8px; padding:8px 15px; text-decoration:none;"><i class="fa-solid fa-arrow-right-from-bracket"></i> <span data-i18n="btn_logout">تسجيل خروج</span></a>
+                <button class="btn-secondary-custom text-only lang-toggle" style="padding: 8px 15px; width:auto; margin:0;">EN</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="report-header">
+        <div class="container">
+            <h1 style="font-weight: 800;"><i class="fa-solid fa-search"></i> <span data-i18n="report_lost_title">الإبلاغ عن مفقود</span></h1>
+            <p class="no-print" data-i18n="report_lost_desc" style="opacity: 0.8; font-size: 1.1rem; margin-top: 10px;">يرجى تعبئة التفاصيل بدقة لمساعدة نظامنا في مطابقة مقتنياتك المفقودة.</p>
+        </div>
+    </div>
+
+    <main class="flex-grow-1">
+        <div class="container">
+            <div class="form-container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} text-center fw-bold mb-4" style="border-radius: 12px;">{{ message }}</div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <form action="{{ url_for('submit_lost') }}" method="POST" enctype="multipart/form-data">
+                    <div class="section-title"><i class="fa-solid fa-address-card"></i> <span data-i18n="sec_personal">معلومات التواصل</span></div>
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <label class="form-label"><span data-i18n="lbl_fullname">الاسم الكامل</span> <span class="text-danger">*</span></label>
+                            <input type="text" name="reporterName" id="fullnameInput" class="form-control" data-i18n="ph_fullname" placeholder="أحمد محمد" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><span data-i18n="auth_email">البريد الإلكتروني</span> <span class="text-danger">*</span></label>
+                            <input type="email" name="reporterEmail" class="form-control" data-i18n="auth_email_ph" placeholder="example@airport.com" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><span data-i18n="lbl_phone">رقم الهاتف</span> <span class="text-danger">*</span></label>
+                            <input type="text" name="reporterPhone" id="phoneInput" class="form-control" data-i18n="ph_phone" placeholder="079XXXXXXX" minlength="10" maxlength="10" pattern="^07[0-9]{8}$" title="يجب أن يتكون رقم الهاتف من 10 أرقام ويبدأ بـ 07" required>
+                        </div>
+                    </div>
+
+                    <div class="section-title"><i class="fa-solid fa-suitcase"></i> <span data-i18n="sec_lost_item">تفاصيل الغرض المفقود</span></div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label"><span data-i18n="lbl_item_name">اسم الغرض</span> <span class="text-danger">*</span></label>
+                            <input type="text" name="itemName" class="form-control" data-i18n="ph_item_name" placeholder="مثال: محفظة جلد سوداء" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label"><span data-i18n="lbl_category">فئة الغرض</span> <span class="text-danger">*</span></label>
+                            <select name="category" class="form-select" required>
+                                <option value="" disabled selected data-i18n="opt_select_ph">---</option>
+                                <option value="Bags" data-i18n="cat_bags">الحقائب والأمتعة</option>
+                                <option value="Electronics" data-i18n="cat_elec">الإلكترونيات</option>
+                                <option value="Documents" data-i18n="cat_docs">الوثائق الرسمية</option>
+                                <option value="Others" data-i18n="cat_others">أخرى</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label"><span data-i18n="lbl_color">لون الغرض</span> <span class="text-danger">*</span></label>
+                            <input type="color" name="color" class="form-control form-control-color w-100" style="padding: 5px; height: 50px; cursor: pointer;" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label"><span data-i18n="lbl_location_lost">أين فقدته تقريباً؟</span> <small class="text-muted" data-i18n="optional_lbl">(اختياري)</small></label>
+                            <select name="location" class="form-select">
+                                <option value="" selected data-i18n="opt_select_ph">---</option>
+                                <option value="Terminal 1" data-i18n="location_t1">مبنى الركاب 1 (Terminal 1)</option>
+                                <option value="Terminal 2" data-i18n="location_t2">مبنى الركاب 2 (Terminal 2)</option>
+                                <option value="Security" data-i18n="location_sec">نقطة التفتيش الأمني</option>
+                                <option value="Gates" data-i18n="location_gates">بوابات المغادرة</option>
+                                <option value="DutyFree" data-i18n="location_duty">السوق الحرة</option>
+                                <option value="NotSure" data-i18n="location_notsure">غير متأكد</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><span data-i18n="lbl_date_lost">تاريخ الفقدان</span> <small class="text-muted" data-i18n="optional_lbl">(اختياري)</small></label>
+                            <input type="text" name="dateLost" class="form-control" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" data-i18n="ph_date" placeholder="YYYY-MM-DD">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><span data-i18n="lbl_time">الوقت التقريبي</span> <small class="text-muted" data-i18n="optional_lbl">(اختياري)</small></label>
+                            <input type="time" name="time" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <label class="form-label"><span data-i18n="lbl_desc">وصف إضافي</span> <small class="text-muted" data-i18n="optional_lbl">(اختياري)</small></label>
+                            <textarea name="description" class="form-control" rows="4" data-i18n="ph_desc" placeholder="أي علامات مميزة..."></textarea>
+                        </div>
+                        <div class="col-12 no-print">
+                            <label class="form-label"><span data-i18n="lbl_upload">إرفاق صورة</span> <small class="text-muted" data-i18n="optional_lbl">(اختياري)</small></label>
+                            <input name="itemImage" id="itemImage" type="file" accept="image/*" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-3 mt-5 no-print">
+                        <button type="submit" class="btn-submit"><i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_submit_report">إرسال البلاغ</span></button>
+                        <button type="button" class="btn-pdf" onclick="window.print()"><i class="fa-solid fa-file-pdf"></i> <span data-i18n="btn_export_pdf">تصدير كـ PDF</span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="no-print text-center">
+        <div class="container">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" onerror="this.onerror=null; this.src='https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg';" alt="Logo" class="logo-img mb-3">
+            <h4 style="color: var(--secondary); font-weight: 800;">Lost & Found Management System</h4>
+            <div class="social-icons mb-4 mt-3">
+                <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            </div>
+            <p style="font-size: 14px; color: rgba(255,255,255,0.5);">© 2026 Lost & Found Management System</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/global.js') }}"></script>
+    <script>
+        document.getElementById('fullnameInput').addEventListener('input', function () { this.value = this.value.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, ''); });
+        document.getElementById('phoneInput').addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, ''); });
+
+        if (typeof translations !== 'undefined') {
+            Object.assign(translations['en'], {
+                'my_profile': 'My Profile', 'btn_logout': 'Logout',
+                'report_lost_title': 'Report Lost Item',
+                'report_lost_desc': 'Please fill out the details accurately to help our system match your lost items.',
+                'sec_personal': 'Contact Information', 'lbl_fullname': 'Full Name', 'ph_fullname': 'e.g., John Doe',
+                'auth_email': 'Email Address', 'auth_email_ph': 'example@airport.com',
+                'lbl_phone': 'Phone Number', 'ph_phone': '079XXXXXXX',
+                'sec_lost_item': 'Lost Item Details', 'lbl_item_name': 'Item Name', 'ph_item_name': 'e.g., Black Leather Wallet',
+                'lbl_category': 'Category', 'opt_select_ph': '--- Select ---',
+                'cat_bags': 'Bags & Luggage', 'cat_elec': 'Electronics', 'cat_docs': 'Documents', 'cat_others': 'Others',
+                'lbl_color': 'Item Color', 'lbl_location_lost': 'Where did you lose it?',
+                'location_t1': 'Terminal 1', 'location_t2': 'Terminal 2', 'location_sec': 'Security Checkpoint', 'location_gates': 'Departure Gates', 'location_duty': 'Duty Free', 'location_notsure': 'Not Sure',
+                'lbl_date_lost': 'Date of Loss', 'ph_date': 'YYYY-MM-DD', 'lbl_time': 'Approximate Time',
+                'lbl_desc': 'Additional Description', 'ph_desc': 'Any identifying marks...',
+                'lbl_upload': 'Upload Image', 'btn_submit_report': 'Submit Report', 'btn_export_pdf': 'Export as PDF',
+                'optional_lbl': '(Optional)'
+            });
+            Object.assign(translations['ar'], {
+                'my_profile': 'حسابي', 'btn_logout': 'تسجيل خروج',
+                'report_lost_title': 'الإبلاغ عن مفقود',
+                'report_lost_desc': 'يرجى تعبئة التفاصيل بدقة لمساعدة نظامنا في مطابقة مقتنياتك المفقودة.',
+                'sec_personal': 'معلومات التواصل', 'lbl_fullname': 'الاسم الكامل', 'ph_fullname': 'أحمد محمد',
+                'auth_email': 'البريد الإلكتروني', 'auth_email_ph': 'example@airport.com',
+                'lbl_phone': 'رقم الهاتف', 'ph_phone': '079XXXXXXX',
+                'sec_lost_item': 'تفاصيل الغرض المفقود', 'lbl_item_name': 'اسم الغرض', 'ph_item_name': 'مثال: محفظة جلد سوداء',
+                'lbl_category': 'فئة الغرض', 'opt_select_ph': '--- اختر ---',
+                'cat_bags': 'الحقائب والأمتعة', 'cat_elec': 'الإلكترونيات', 'cat_docs': 'الوثائق الرسمية', 'cat_others': 'أخرى',
+                'lbl_color': 'لون الغرض', 'lbl_location_lost': 'أين فقدته تقريباً؟',
+                'location_t1': 'مبنى الركاب 1', 'location_t2': 'مبنى الركاب 2', 'location_sec': 'نقطة التفتيش الأمني', 'location_gates': 'بوابات المغادرة', 'location_duty': 'السوق الحرة', 'location_notsure': 'غير متأكد',
+                'lbl_date_lost': 'تاريخ الفقدان', 'ph_date': 'YYYY-MM-DD', 'lbl_time': 'الوقت التقريبي',
+                'lbl_desc': 'وصف إضافي', 'ph_desc': 'أي علامات مميزة...',
+                'lbl_upload': 'إرفاق صورة', 'btn_submit_report': 'إرسال البلاغ', 'btn_export_pdf': 'تصدير كـ PDF',
+                'optional_lbl': '(اختياري)'
+            });
+
+            const applyLocalTranslation = () => {
+                let lang = document.body.getAttribute('data-lang') || 'ar';
+                document.querySelectorAll("[data-i18n]").forEach(el => {
+                    const key = el.getAttribute("data-i18n");
+                    if (translations[lang] && translations[lang][key]) {
+                        if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+                            el.placeholder = translations[lang][key];
+                        } else {
+                            el.innerHTML = translations[lang][key];
+                        }
+                    }
+                });
+                if (lang === 'en') document.getElementById('mainNav').classList.remove('ms-auto');
+            };
+
+            applyLocalTranslation();
+            const observer = new MutationObserver(applyLocalTranslation);
+            observer.observe(document.body, { attributes: true, attributeFilter: ['data-lang'] });
+        }
+    </script>
+</body>
+</html>

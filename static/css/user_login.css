@@ -1,0 +1,262 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Montserrat:wght@400;600;700;800&display=swap');
+
+:root {
+    --brand-primary: #244163;   /* أزرق اللوجو */
+    --brand-accent: #E28327;    /* برتقالي اللوجو */
+    --brand-secondary: #548CBF; /* أزرق فاتح */
+    --bg-light: #F4F7F9;
+    --text-dark: #122136;
+    --white: #FFFFFF;
+}
+
+html, body { height: 100%; }
+body {
+    font-family: 'Montserrat', 'Cairo', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s, color 0.3s;
+}
+main { flex: 1; }
+
+/* ================= NAVBAR ================= */
+.navbar {
+    background-color: var(--white);
+    box-shadow: 0 4px 20px rgba(36, 65, 99, 0.08);
+    padding: 10px 0;
+    border-bottom: 3px solid var(--brand-accent);
+    transition: 0.3s;
+}
+
+.nav-logo {
+    width: 55px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.brand-text .title-main {
+    color: var(--brand-primary);
+    font-size: 1.2rem;
+    line-height: 1.1;
+}
+.brand-text .title-sub {
+    color: var(--brand-accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.nav-link {
+    color: var(--brand-primary) !important;
+    font-weight: 600;
+    font-size: 1.05rem;
+    margin: 0 8px;
+    position: relative;
+    transition: 0.3s;
+}
+
+.nav-link:hover { color: var(--brand-accent) !important; }
+
+.btn-login {
+    background: var(--brand-primary);
+    color: var(--white) !important;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+}
+.btn-login:hover {
+    background: var(--brand-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(226, 131, 39, 0.3);
+}
+
+/* ================= HERO ================= */
+.hero {
+    position: relative;
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--white);
+}
+
+.hero-img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(36, 65, 99, 0.95) 0%, rgba(18, 33, 54, 0.8) 100%);
+    z-index: -1;
+}
+
+.hero-content {
+    max-width: 800px;
+    padding: 20px;
+    z-index: 1;
+}
+
+.portal-title {
+    color: var(--brand-accent);
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+}
+
+.hero-content h2 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+.hero-content h2 .highlight { color: var(--brand-accent); }
+
+.hero-content p {
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 35px;
+}
+
+.buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.btn-lost {
+    background: var(--brand-accent);
+    color: var(--white);
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 2px solid var(--brand-accent);
+    transition: 0.3s;
+}
+.btn-lost:hover {
+    background: transparent;
+    color: var(--brand-accent);
+}
+
+.btn-found {
+    background: transparent;
+    color: var(--brand-accent);
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 2px solid var(--brand-accent);
+    transition: 0.3s;
+}
+.btn-found:hover {
+    background: var(--brand-accent);
+    color: var(--white);
+}
+
+/* ================= FILTERS ================= */
+.filters {
+    background: var(--white);
+    border-top: 4px solid var(--brand-primary);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+.filters label { color: var(--brand-primary); font-weight: 700; }
+.filters .form-control, .filters .form-select {
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+}
+.filters .form-control:focus, .filters .form-select:focus {
+    border-color: var(--brand-accent);
+    box-shadow: 0 0 0 3px rgba(226, 131, 39, 0.2);
+}
+#resetFilters {
+    background: var(--bg-light);
+    color: var(--brand-primary);
+    border: 1px solid var(--brand-primary);
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 10px 20px;
+    transition: 0.3s;
+}
+#resetFilters:hover {
+    background: var(--brand-primary);
+    color: var(--white);
+}
+
+/* ================= CARDS ================= */
+.report-card {
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: 0.3s;
+    border: 1px solid transparent;
+}
+.report-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(36, 65, 99, 0.15);
+    border-color: var(--brand-accent);
+}
+.report-img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-bottom: 3px solid var(--brand-secondary);
+}
+.report-title { color: var(--brand-primary); font-size: 1.15rem; }
+
+/* ================= FOOTER ================= */
+footer {
+    background-color: var(--brand-primary);
+    color: var(--white);
+    border-top: 5px solid var(--brand-accent);
+}
+.footer-logo {
+    width: 70px;
+    border-radius: 10px;
+    background: #fff;
+    padding: 5px;
+}
+.footer-title, .footer-links-title, .footer-contact-title {
+    color: var(--brand-accent);
+    font-weight: 700;
+}
+.footer-desc, .footer-email, .footer-phone, .footer-copy { color: rgba(255,255,255,0.7); }
+.footer-links a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    transition: 0.3s;
+}
+.footer-links a:hover { color: var(--brand-accent); padding-left: 5px; }
+html[dir="rtl"] .footer-links a:hover { padding-left: 0; padding-right: 5px; }
+
+/* ================= DARK MODE ================= */
+body.dark-mode {
+    background-color: #0A111A;
+    color: #F8FAFC;
+}
+body.dark-mode .navbar {
+    background-color: #122136;
+    border-bottom-color: var(--brand-accent);
+}
+body.dark-mode .nav-link, body.dark-mode .brand-text .title-main { color: #F8FAFC !important; }
+body.dark-mode .filters, body.dark-mode .report-card {
+    background-color: #122136;
+    border-color: #1d334d;
+}
+body.dark-mode .filters label, body.dark-mode .report-title { color: var(--brand-accent); }
+body.dark-mode .form-control, body.dark-mode .form-select {
+    background-color: #0A111A;
+    color: #F8FAFC;
+    border-color: #244163;
+}

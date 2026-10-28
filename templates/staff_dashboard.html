@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Field Radar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <style>
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+            .sidebar ul {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                margin: 0;
+                padding: 0 0 20px 0;
+            }
+
+        .bottom-menu {
+            margin-top: auto;
+        }
+
+        .admin-header {
+            background: var(--card-bg, white);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-right: 6px solid var(--secondary);
+            transition: 0.3s;
+        }
+
+            .admin-header h2 {
+                color: var(--text-color, var(--primary));
+                font-weight: 800;
+                margin: 0;
+                font-size: 1.8rem;
+            }
+
+            .admin-header p {
+                color: var(--text-color, #64748b);
+                margin: 5px 0 0;
+                font-weight: 500;
+                opacity: 0.8;
+            }
+
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            margin: 2px 10px;
+            border-radius: 12px;
+            transition: 0.3s;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+        }
+
+            .sidebar ul li a i {
+                font-size: 1.2rem;
+                width: 25px;
+                text-align: center;
+            }
+
+            .sidebar ul li a.active {
+                background-color: var(--secondary) !important;
+                color: var(--primary) !important;
+                font-weight: 800;
+            }
+
+        .radar-viewport {
+            width: 100%;
+            height: 600px;
+            background-color: #0b1120;
+            border-radius: 25px;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #1e293b;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+        }
+
+        .map-pin {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+            width: 120px;
+        }
+
+        .icon-pin {
+            font-size: 26px;
+            margin-bottom: 5px;
+            color: #7f8c8d;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .map-pin .label {
+            font-size: 11px;
+            font-weight: 800;
+            background: rgba(255,255,255,0.9);
+            padding: 4px 8px;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            color: var(--dark);
+            white-space: nowrap;
+        }
+
+        .pin-storage .icon-pin {
+            font-size: 36px;
+            color: #2ecc71;
+        }
+
+        .pin-storage .label {
+            background: #2ecc71;
+            color: white;
+            font-size: 13px;
+        }
+
+        .radar-alert {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            transition: all 1s ease-in-out;
+        }
+
+        .ping {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 2px solid;
+            animation: radarPulse 2s infinite ease-out;
+            position: absolute;
+            top: -20px;
+            left: -20px;
+        }
+
+        .radar-alert i {
+            font-size: 35px;
+            position: relative;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+        }
+
+        .alert-label {
+            color: white;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 12px;
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .staff-avatar {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 101;
+            width: 45px;
+            height: 45px;
+            background: #3498db;
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+            .staff-avatar i {
+                color: white;
+                font-size: 20px;
+            }
+
+        @keyframes radarPulse {
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        .op-footer {
+            background: #1e293b;
+            border-top: 4px solid var(--secondary);
+            padding: 15px 30px;
+            border-radius: 0 0 25px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .op-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-weight: 700;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        .btn-action-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: #334155;
+            color: #94a3b8;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: not-allowed;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.5;
+            font-family: inherit;
+        }
+
+            .action-btn.active {
+                background: var(--secondary);
+                color: var(--primary);
+                cursor: pointer;
+                opacity: 1;
+            }
+
+            .action-btn.done {
+                background: #2ecc71;
+                color: white;
+                opacity: 1;
+            }
+
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        body.dark-mode .admin-header {
+            background: #1A2235 !important;
+            border-color: #2C3E50 !important;
+            color: #FFFFFF !important;
+        }
+
+            body.dark-mode .admin-header h2, body.dark-mode .admin-header p {
+                color: #FFFFFF !important;
+            }
+    </style>
+</head>
+<body data-lang="ar">
+
+    <audio id="staffAlarmSound" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" preload="auto"></audio>
+
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" onerror="this.onerror=null; this.src='https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg';" alt="Logo" class="logo-img">
+            <h2><span class="auto-trans" data-ar="بوابة الموظف">بوابة الموظف</span><br><span style="font-size: 13px; color: rgba(255,255,255,0.6);">{{ session['staff_id'] }}</span></h2>
+        </div>
+        <ul>
+            <li><a href="{{ url_for('staff_dashboard') }}" class="active"><i class="fa-solid fa-satellite-dish"></i> <span class="auto-trans" data-ar="الرادار الميداني">الرادار الميداني</span></a></li>
+            <li><a href="{{ url_for('staff_reports') }}"><i class="fa-solid fa-clipboard-list"></i> <span class="auto-trans" data-ar="إدارة البلاغات">إدارة البلاغات</span></a></li>
+            <div class="bottom-menu">
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
+            <li><a href="#" class="theme-toggle"><i class="fa-solid fa-moon"></i> <span class="auto-trans" data-ar="الوضع الليلي">الوضع الليلي</span></a></li>
+            <li><a href="#" class="lang-toggle"><i class="fa-solid fa-globe"></i> English</a></li>
+            <li><a href="{{ url_for('logout') }}" style="color: #ff7675;"><i class="fa-solid fa-power-off"></i> <span class="auto-trans" data-ar="تسجيل خروج">تسجيل خروج</span></a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <header class="admin-header">
+            <div>
+                <h2 class="auto-trans" data-ar="نظام التتبع الميداني المباشر">نظام التتبع الميداني المباشر</h2>
+                <p class="auto-trans" data-ar="مراقبة فورية لموقع الموظف وحالات البلاغات الجديدة">مراقبة فورية لموقع الموظف وحالات البلاغات الجديدة</p>
+            </div>
+        </header>
+
+        <div class="radar-viewport" id="radarContainer">
+            <div class="grid-bg"></div>
+
+            <div class="staff-avatar" id="staffAvatar" style="opacity: 0;">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+
+            <div class="radar-alert" id="liveAlert" style="display: none;">
+                <div class="ping" id="pingCircle"></div>
+                <i class="fa-solid fa-location-dot" id="alertIcon"></i>
+                <div class="alert-label" id="alertLabelText" style="direction: ltr;">ALERT</div>
+            </div>
+
+            <div class="map-pin" style="top: 15%; left: 20%;"><i class="fa-solid fa-plane-departure icon-pin"></i><span class="label auto-trans" data-ar="مدرج الطائرات">مدرج الطائرات</span></div>
+            <div class="map-pin" style="top: 15%; left: 50%;"><i class="fa-solid fa-plane-arrival icon-pin"></i><span class="label auto-trans" data-ar="ساحة الطائرات">ساحة الطائرات</span></div>
+            <div class="map-pin" style="top: 15%; left: 80%;"><i class="fa-solid fa-tower-observation icon-pin" style="color:#f1c40f;"></i><span class="label auto-trans" data-ar="برج المراقبة">برج المراقبة</span></div>
+            <div class="map-pin" style="top: 35%; left: 20%;"><i class="fa-solid fa-warehouse icon-pin"></i><span class="label auto-trans" data-ar="حظائر الطائرات">حظائر الطائرات</span></div>
+            <div class="map-pin" style="top: 35%; left: 50%;"><i class="fa-solid fa-door-open icon-pin"></i><span class="label auto-trans" data-ar="بوابات الصعود">بوابات الصعود</span></div>
+            <div class="map-pin" style="top: 35%; left: 80%;"><i class="fa-solid fa-plane-circle-check icon-pin" style="color:var(--primary);"></i><span class="label auto-trans" data-ar="صالة المغادرة">صالة المغادرة</span></div>
+            <div class="map-pin" style="top: 55%; left: 20%;"><i class="fa-solid fa-ticket icon-pin"></i><span class="label auto-trans" data-ar="مكاتب التسجيل">مكاتب التسجيل</span></div>
+            <div class="map-pin" style="top: 55%; left: 50%;"><i class="fa-solid fa-shield-halved icon-pin" style="color:var(--danger);"></i><span class="label auto-trans" data-ar="التفتيش الأمني">التفتيش الأمني</span></div>
+            <div class="map-pin" style="top: 55%; left: 80%;"><i class="fa-solid fa-passport icon-pin"></i><span class="label auto-trans" data-ar="الجوازات">الجوازات</span></div>
+            <div class="map-pin" style="top: 75%; left: 20%;"><i class="fa-solid fa-shop icon-pin" style="color:#9b59b6;"></i><span class="label auto-trans" data-ar="السوق الحرة">السوق الحرة</span></div>
+            <div class="map-pin pin-storage" style="top: 75%; left: 50%;"><i class="fa-solid fa-box-open icon-pin"></i><span class="label auto-trans" data-ar="المستودع الرئيسي">المستودع الرئيسي</span></div>
+            <div class="map-pin" style="top: 75%; left: 80%;"><i class="fa-solid fa-suitcase-rolling icon-pin"></i><span class="label auto-trans" data-ar="استلام الأمتعة">استلام الأمتعة</span></div>
+            <div class="map-pin" style="top: 92%; left: 20%;"><i class="fa-solid fa-users-gear icon-pin" style="color:#3498db;"></i><span class="label auto-trans" data-ar="مكتب الموظفين" style="border: 1px solid #3498db; color: #3498db;">مكتب الموظفين</span></div>
+            <div class="map-pin" style="top: 92%; left: 40%;"><i class="fa-solid fa-mug-hot icon-pin"></i><span class="label auto-trans" data-ar="كافتيريا">كافتيريا</span></div>
+            <div class="map-pin" style="top: 92%; left: 60%;"><i class="fa-solid fa-door-open icon-pin" style="color:var(--primary);"></i><span class="label auto-trans" data-ar="صالة الوصول">صالة الوصول</span></div>
+            <div class="map-pin" style="top: 92%; left: 80%;"><i class="fa-solid fa-car icon-pin"></i><span class="label auto-trans" data-ar="مواقف سيارات">مواقف سيارات</span></div>
+        </div>
+
+        <div class="op-footer">
+            <div class="op-status" id="statusMsg">
+                <div class="status-dot"></div>
+                <span class="auto-trans" id="msgTextDisplay" data-ar="بانتظار مهام جديدة من النظام...">بانتظار مهام جديدة من النظام...</span>
+            </div>
+
+            <div class="btn-action-group">
+                <button class="action-btn" id="step1" onclick="handleStep(1)">
+                    <i class="fa-solid fa-route"></i> <span class="auto-trans" id="btn1Text" data-ar="توجه للموقع">توجه للموقع</span>
+                </button>
+                <button class="action-btn" id="step2" onclick="handleStep(2)">
+                    <i class="fa-solid fa-hand-holding-box"></i> <span class="auto-trans" id="btn2Text" data-ar="تم الاستلام">تم الاستلام</span>
+                </button>
+                <button class="action-btn" id="step3" onclick="handleStep(3)">
+                    <i class="fa-solid fa-box-archive"></i> <span class="auto-trans" id="btn3Text" data-ar="تم الإيداع">تم الإيداع</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/global.js') }}"></script>
+    <script>
+        const dict = {
+            'بوابة الموظف': 'Staff Portal', 'الرادار الميداني': 'Field Radar', 'إدارة البلاغات': 'Manage Reports', 'الوضع الليلي': 'Dark Mode', 'تسجيل خروج': 'Logout',
+            'نظام التتبع الميداني المباشر': 'Live Field Tracking System', 'مراقبة فورية لموقع الموظف وحالات البلاغات الجديدة': 'Real-time monitoring of staff location and new report statuses',
+            'بانتظار مهام جديدة من النظام...': 'Waiting for new system tasks...', 'توجه للموقع': 'Head to Location', 'تم الاستلام': 'Item Picked Up', 'تم الإيداع': 'Item Stored',
+            'جاري التوجه للموقع الآن...': 'Heading to location now...', 'تم الوصول': 'Arrived',
+            'تم الاستلام.. جاري التوجه للمستودع.': 'Item picked up.. heading to Storage.',
+            'تم الإيداع والمهمة انتهت بنجاح.': 'Stored and task completed successfully.',
+            'مدرج الطائرات': 'Runways', 'ساحة الطائرات': 'Apron', 'برج المراقبة': 'Control Tower', 'حظائر الطائرات': 'Hangars', 'بوابات الصعود': 'Gates', 'صالة المغادرة': 'Departure Hall',
+            'مكاتب التسجيل': 'Check-in Desks', 'التفتيش الأمني': 'Security Checkpoint', 'الجوازات': 'Passport Control', 'المستودع الرئيسي': 'Main Storage', 'السوق الحرة': 'Duty Free', 'استلام الأمتعة': 'Baggage Claim',
+            'مكتب الموظفين': 'Staff Office', 'كافتيريا': 'Cafeteria', 'صالة الوصول': 'Arrival Hall', 'مواقف سيارات': 'Parking',
+            'تلفون سامسونج S24': 'Samsung S24', 'محفظة جلدية': 'Leather Wallet', 'جواز سفر أردني': 'Jordanian Passport', 'حقيبة ظهر لابتوب': 'Laptop Backpack', 'ساعة ابل ذكية': 'Apple Watch', 'نظارات طبية': 'Prescription Glasses', 'ايباد برو': 'iPad Pro', 'شاحن ايفون': 'iPhone Charger', 'شهادة ميلاد': 'Birth Certificate', 'مفاتيح سيارة': 'Car Keys', 'حقيبة يد نسائية': 'Women\'s Handbag', 'سماعات ايربودز': 'AirPods', 'ملف أوراق رسمية': 'Documents Folder', 'جاكيت شتوي': 'Winter Jacket', 'عطر نسائي': 'Perfume', 'لابتوب لينوفو': 'Lenovo Laptop', 'محفظة بطاقات': 'Card Holder', 'شنطة أطفال': 'Kids Bag', 'بطاقة أحوال مدنية': 'ID Card', 'كاميرا كانون': 'Canon Camera', 'ايفون 14': 'iPhone 14', 'حقيبة سفر كبيرة': 'Large Suitcase', 'محفظة رجالية': 'Men\'s Wallet', 'ساعة رولكس تقليد': 'Fake Rolex', 'سماعات سوني': 'Sony Headphones', 'بطاقة بنك عربي': 'Bank Card', 'شاحن لابتوب': 'Laptop Charger', 'مفاتيح منزل': 'House Keys', 'نظارات شمسية': 'Sunglasses', 'حقيبة يد صغيرة': 'Small Handbag', 'ايباد ميني': 'iPad Mini', 'ملف بلاستيكي': 'Plastic Folder', 'قبعة شتوية': 'Winter Hat', 'ميدالية سيارة': 'Car Keychain'
+        };
+
+        function translateAll() {
+            let lang = document.body.getAttribute('data-lang') || 'ar';
+            document.querySelectorAll('.auto-trans').forEach(el => {
+                let arText = el.getAttribute('data-ar');
+                if (lang === 'en' && dict[arText]) {
+                    if (el.children.length === 0) el.innerText = dict[arText];
+                    else el.innerHTML = el.innerHTML.replace(arText, dict[arText]);
+                } else if (lang === 'en' && arText.includes('🚨 مهمة جديدة:')) {
+                    let englishText = arText.replace('🚨 مهمة جديدة: ', '🚨 NEW TASK: ').replace(' في ', ' at ').replace('!', '!');
+                    for(let key in dict) { englishText = englishText.replace(key, dict[key]); }
+                    el.innerText = englishText;
+                } else {
+                    if (el.children.length === 0) el.innerText = arText;
+                    else {
+                        let enText = dict[arText];
+                        if (enText && el.innerHTML.includes(enText)) el.innerHTML = el.innerHTML.replace(enText, arText);
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            translateAll();
+            const observer = new MutationObserver(translateAll);
+            observer.observe(document.body, { attributes: true, attributeFilter: ['data-lang'] });
+        });
+
+        const staffAvatar = document.getElementById('staffAvatar');
+        const alertBox = document.getElementById('liveAlert');
+        const msgTextDisplay = document.getElementById('msgTextDisplay');
+        const audio = document.getElementById('staffAlarmSound');
+
+        function getTargetCoords(locStr) {
+            let loc = (locStr || "").toLowerCase();
+            if (loc.includes('تفتيش') || loc.includes('security')) return {top: "55%", left: "50%"};
+            if (loc.includes('سوق') || loc.includes('duty')) return {top: "75%", left: "20%"};
+            if (loc.includes('بواب') || loc.includes('gate')) return {top: "35%", left: "50%"};
+            if (loc.includes('أمتعة') || loc.includes('baggage')) return {top: "75%", left: "80%"};
+            if (loc.includes('كافتيريا') || loc.includes('cafe')) return {top: "92%", left: "40%"};
+            if (loc.includes('مواقف') || loc.includes('parking')) return {top: "92%", left: "80%"};
+            if (loc.includes('جوازات') || loc.includes('passport')) return {top: "55%", left: "80%"};
+            if (loc.includes('مكتب') || loc.includes('office')) return {top: "92%", left: "20%"};
+            return {top: "35%", left: "50%"};
+        }
+
+        const officeCoords = {top: "92%", left: "20%"};
+        const storageCoords = {top: "75%", left: "50%"};
+
+        const liveReports = [
+            {% for item in recent_lost %} { name: "{{ item.item_name }}", type: "lost", loc: "{{ item.location }}" }, {% endfor %}
+            {% for item in recent_found %} { name: "{{ item.item_name }}", type: "found", loc: "{{ item.location }}" }, {% endfor %}
+        ];
+
+        let currentReportIndex = 0;
+        let rotationInterval;
+        let currentTargetCoords = null;
+
+        function showNextReport() {
+            if(liveReports.length === 0) return;
+
+            let report = liveReports[currentReportIndex];
+            currentTargetCoords = getTargetCoords(report.loc);
+            let color = report.type === 'lost' ? '#ff4757' : '#2ecc71';
+
+            alertBox.style.top = currentTargetCoords.top;
+            alertBox.style.left = currentTargetCoords.left;
+            alertBox.style.display = 'block';
+
+            document.getElementById('pingCircle').style.borderColor = color;
+            document.getElementById('pingCircle').style.backgroundColor = color + '33';
+            document.getElementById('alertIcon').style.color = color;
+            document.getElementById('alertLabelText').style.backgroundColor = color;
+
+            let lang = document.body.getAttribute('data-lang');
+            let transName = (lang === 'en' && dict[report.name]) ? dict[report.name] : report.name;
+            let prefix = report.type === 'lost' ? (lang === 'en' ? '🚨 Lost: ' : '🚨 مفقود: ') : (lang === 'en' ? '✅ Found: ' : '✅ معثور: ');
+
+            document.getElementById('alertLabelText').innerText = prefix + transName;
+
+            let alertMsgAr = `🚨 مهمة جديدة: ${report.name} في ${report.loc}!`;
+            msgTextDisplay.setAttribute('data-ar', alertMsgAr);
+            document.querySelector('.status-dot').style.background = color;
+            msgTextDisplay.style.color = color;
+
+            document.getElementById('step1').classList.add('active');
+            translateAll();
+
+            // تشغيل الإنذار الصوتي للموظف
+            let playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => { document.body.addEventListener('click', () => audio.play(), {once: true}); });
+            }
+
+            currentReportIndex = (currentReportIndex + 1) % liveReports.length;
+        }
+
+        window.addEventListener('load', () => {
+            staffAvatar.style.top = officeCoords.top;
+            staffAvatar.style.left = officeCoords.left;
+            staffAvatar.style.opacity = '1';
+        });
+
+        setTimeout(() => {
+            showNextReport();
+            rotationInterval = setInterval(showNextReport, 7000);
+        }, 1000);
+
+        function handleStep(step) {
+            let lang = document.body.getAttribute('data-lang');
+
+            if (step === 1) {
+                clearInterval(rotationInterval);
+                staffAvatar.style.top = currentTargetCoords.top;
+                staffAvatar.style.left = currentTargetCoords.left;
+
+                msgTextDisplay.setAttribute('data-ar', 'جاري التوجه للموقع الآن...');
+                document.querySelector('.status-dot').style.background = 'var(--secondary)';
+                msgTextDisplay.style.color = 'white';
+
+                document.getElementById('step1').classList.replace('active', 'done');
+                document.getElementById('btn1Text').setAttribute('data-ar', 'تم الوصول');
+                document.getElementById('step2').classList.add('active');
+
+            } else if (step === 2) {
+                staffAvatar.style.top = storageCoords.top;
+                staffAvatar.style.left = storageCoords.left;
+                alertBox.style.top = storageCoords.top;
+                alertBox.style.left = storageCoords.left;
+
+                msgTextDisplay.setAttribute('data-ar', 'تم الاستلام.. جاري التوجه للمستودع.');
+                document.getElementById('step2').classList.replace('active', 'done');
+                document.getElementById('step3').classList.add('active');
+
+            } else if (step === 3) {
+                staffAvatar.style.top = officeCoords.top;
+                staffAvatar.style.left = officeCoords.left;
+                alertBox.style.display = 'none';
+
+                msgTextDisplay.setAttribute('data-ar', 'تم الإيداع والمهمة انتهت بنجاح.');
+                document.querySelector('.status-dot').style.background = '#2ecc71';
+                msgTextDisplay.style.color = '#2ecc71';
+
+                document.getElementById('step3').classList.replace('active', 'done');
+
+                setTimeout(() => {
+                    document.getElementById('step1').className = 'action-btn'; document.getElementById('step1').innerHTML = '<i class="fa-solid fa-route"></i> <span class="auto-trans" id="btn1Text" data-ar="توجه للموقع">توجه للموقع</span>';
+                    document.getElementById('step2').className = 'action-btn'; document.getElementById('step2').innerHTML = '<i class="fa-solid fa-hand-holding-box"></i> <span class="auto-trans" id="btn2Text" data-ar="تم الاستلام">تم الاستلام</span>';
+                    document.getElementById('step3').className = 'action-btn'; document.getElementById('step3').innerHTML = '<i class="fa-solid fa-box-archive"></i> <span class="auto-trans" id="btn3Text" data-ar="تم الإيداع">تم الإيداع</span>';
+                    showNextReport();
+                    rotationInterval = setInterval(showNextReport, 7000);
+                }, 3000);
+            }
+            translateAll();
+        }
+    </script>
+</body>
+</html>

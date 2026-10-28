@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Lost & Found</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <style>
+        body {
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+        }
+        .auth-page-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .auth-box-container {
+            width: 100%;
+            max-width: 480px;
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            text-align: center;
+            position: relative;
+        }
+        .top-buttons-auth {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .logo-container {
+            width: 90px;
+            height: 90px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 3px solid var(--secondary);
+            overflow: hidden;
+        }
+        .logo-container img {
+            max-height: 70%;
+            width: auto;
+        }
+        .auth-title {
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-weight: 800;
+        }
+        .input-group {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .input-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark, #333);
+        }
+        .input-group input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background-color: #fcfcfc;
+            font-size: 15px;
+            transition: 0.3s;
+            font-family: inherit;
+        }
+        .input-group input:focus {
+            border-color: var(--secondary, #d4af37);
+            outline: none;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+        .password-wrapper {
+            position: relative;
+        }
+        .password-wrapper input {
+            padding-left: 40px;
+        }
+        .toggle-password {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #7f8c8d;
+            padding: 5px;
+            z-index: 10;
+        }
+        .btn-primary-custom {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+            cursor: pointer;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            font-weight: bold;
+            font-family: inherit;
+            transition: 0.3s;
+        }
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+        .auth-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .auth-links a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        body[data-lang="en"] .input-group {
+            text-align: left;
+        }
+
+        /* Dark Mode - موحد مع باقي الشاشات 100% */
+        body.dark-mode, body.dark-mode .auth-page-wrapper {
+            background-color: #121620 !important;
+        }
+        body.dark-mode .auth-box-container {
+            background: #1A2235 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3) !important;
+        }
+        body.dark-mode .auth-title,
+        body.dark-mode .input-label,
+        body.dark-mode .auth-links a {
+            color: #E2E8F0 !important;
+        }
+        body.dark-mode .input-group input {
+            background-color: #121620 !important;
+            color: #E2E8F0 !important;
+            border-color: #34495e !important;
+        }
+        body.dark-mode .input-group input::placeholder {
+            color: #94a3b8 !important;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            body:not(.light-mode), body:not(.light-mode) .auth-page-wrapper {
+                background-color: #121620 !important;
+            }
+            body:not(.light-mode) .auth-box-container {
+                background: #1A2235 !important;
+                color: #FFFFFF !important;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3) !important;
+            }
+            body:not(.light-mode) .auth-title,
+            body:not(.light-mode) .input-label,
+            body:not(.light-mode) .auth-links a {
+                color: #E2E8F0 !important;
+            }
+            body:not(.light-mode) .input-group input {
+                background-color: #121620 !important;
+                color: #E2E8F0 !important;
+                border-color: #34495e !important;
+            }
+            body:not(.light-mode) .input-group input::placeholder {
+                color: #94a3b8 !important;
+            }
+        }
+    </style>
+</head>
+<body data-lang="ar">
+
+    <div class="auth-page-wrapper">
+        <div class="top-buttons-auth">
+            <button class="top-btn-auth lang-toggle text-only" id="langToggleBtn">EN</button>
+        </div>
+
+        <div class="auth-box-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="margin-bottom: 15px; text-align: center; font-weight: bold; padding: 10px; border-radius: 8px; background: #e74c3c; color: white;">
+                <span class="auto-trans" data-ar="{{ message }}">{{ message }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='logo.jpg') }}" 
+                     onerror="this.onerror=null; this.src='https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg';" 
+                     alt="Logo">
+            </div>
+
+            <h3 data-i18n="auth_login_title" class="auth-title">تسجيل الدخول للنظام</h3>
+
+            <form action="{{ url_for('login') }}" method="POST">
+                <div class="input-group">
+                    <label class="input-label" data-i18n="auth_email">البريد الإلكتروني</label>
+                    <input type="email" name="email" data-i18n="auth_email_ph" placeholder="example@airport.com" required autofocus>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" data-i18n="auth_pass">كلمة المرور</label>
+                    <div class="password-wrapper">
+                        <input type="password" 
+                               name="password" 
+                               id="passwordInput" 
+                               data-i18n="auth_pass_ph" 
+                               placeholder="••••••••" 
+                               maxlength="8"
+                               pattern="^(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{1,8}$"
+                               title="يجب أن تحتوي كلمة المرور على حرف واحد ورمز واحد على الأقل، وأن لا تتجاوز 8 خانات"
+                               required>
+                        <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility()"></i>
+                    </div>
+                </div>
+
+                <div class="auth-links" style="margin-bottom: 20px;">
+                    <a href="{{ url_for('forgot_password') }}" data-i18n="auth_forgot">نسيت كلمة المرور؟</a>
+                </div>
+
+                <button type="submit" class="btn-primary-custom" data-i18n="auth_btn_login">دخول النظام</button>
+            </form>
+
+            <div class="auth-links" style="justify-content: center; margin-top: 20px;">
+                <a href="{{ url_for('register_user') }}" data-i18n="auth_create">ليس لديك حساب؟ سجل الآن</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/global.js') }}"></script>
+    <script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('passwordInput');
+            const toggleIcon = document.querySelector('.toggle-password');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+                toggleIcon.style.color = "var(--primary)";
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+                toggleIcon.style.color = "#7f8c8d";
+            }
+        }
+    </script>
+</body>
+</html>

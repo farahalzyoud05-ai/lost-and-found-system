@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Lost & Found</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <style>
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar ul {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            margin: 0;
+            padding: 0 0 20px 0;
+        }
+        .sidebar ul li a {
+            padding: 10px 20px;
+            margin: 2px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+        .sidebar ul li a.active {
+            background-color: var(--secondary);
+            color: var(--primary);
+            font-weight: bold;
+        }
+        .bottom-menu {
+            margin-top: auto;
+        }
+        .admin-header {
+            background: var(--card-bg, white);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-header h2 {
+            color: var(--primary);
+            font-weight: 800;
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        .admin-header p {
+            color: gray;
+            margin: 5px 0 0;
+            font-weight: 500;
+        }
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: var(--card-bg, white);
+            padding: 25px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-bottom: 5px solid var(--primary);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card h3 {
+            font-size: 40px;
+            margin: 0;
+            color: var(--dark);
+            font-weight: 800;
+        }
+        .stat-card p {
+            margin: 0;
+            color: gray;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .stat-card i {
+            font-size: 45px;
+            color: rgba(26, 43, 76, 0.1);
+        }
+        .map-container {
+            background: var(--card-bg, white);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: relative;
+            transition: 0.3s;
+        }
+        .map-container.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 999999;
+            border-radius: 0;
+            margin: 0;
+            padding: 30px;
+        }
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .smart-map {
+            width: 100%;
+            height: 600px;
+            border-radius: 15px;
+            position: relative;
+            background-color: #e8eaed;
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+            border: 3px solid #bdc3c7;
+            overflow: hidden;
+            direction: ltr !important;
+            transition: 0.3s;
+        }
+        .map-container.fullscreen .smart-map {
+            height: calc(100vh - 120px);
+        }
+        .close-map-btn {
+            display: none;
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .map-container.fullscreen .close-map-btn {
+            display: inline-block;
+        }
+        .map-container.fullscreen #expandMapBtn {
+            display: none;
+        }
+        .map-pin {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+            width: 120px;
+        }
+        .icon-pin {
+            font-size: 26px;
+            margin-bottom: 5px;
+            color: #7f8c8d;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+        .map-pin .label {
+            font-size: 11px;
+            font-weight: 800;
+            background: rgba(255,255,255,0.9);
+            padding: 4px 8px;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            color: var(--dark);
+            white-space: nowrap;
+        }
+        .pin-storage .icon-pin {
+            font-size: 36px;
+            color: #2ecc71;
+        }
+        .pin-storage .label {
+            background: #2ecc71;
+            color: white;
+            font-size: 13px;
+        }
+        .security-staff {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            z-index: 30;
+            background: var(--primary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            border: 2px solid #f1c40f;
+            transition: top 3s ease-in-out, left 3s ease-in-out;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+        }
+        .staff-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #16264c;
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            text-align: center;
+            border: 2px solid #e67e22;
+            z-index: 100;
+        }
+        .security-staff:hover .staff-tooltip {
+            visibility: visible;
+            opacity: 1;
+            bottom: 120%;
+        }
+        .radar-alert {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            transition: all 1s ease-in-out;
+        }
+        .ping {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 2px solid;
+            animation: radarPulse 2s infinite ease-out;
+            position: absolute;
+            top: -20px;
+            left: -20px;
+        }
+        .radar-alert i {
+            font-size: 35px;
+            position: relative;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+        }
+        .alert-label {
+            color: white;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 12px;
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        @keyframes radarPulse {
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+        .map-legend {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .legend-item {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #334155;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-box {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .btn-cancel {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        ul.details-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        body.dark-mode .admin-header, body.dark-mode .stat-card, body.dark-mode .map-container, body.dark-mode .modal-box {
+            background: #1A2235;
+            border-color: #2C3E50;
+            color: #fff;
+        }
+        body.dark-mode .admin-header h2, body.dark-mode .stat-card h3 {
+            color: #fff;
+        }
+        body.dark-mode .smart-map {
+            border-color: #2C3E50;
+            background-color: #0b1120;
+        }
+        body.dark-mode .map-pin .label {
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+        }
+        body.dark-mode ul.details-list li {
+            border-bottom: 1px solid #2C3E50;
+            color: #FFFFFF;
+        }
+        body.dark-mode ul.details-list li strong {
+            color: #FFFFFF;
+        }
+        body.dark-mode ul.details-list li span {
+            color: #64b5f6 !important;
+            font-size: 16px;
+        }
+        body.dark-mode .modal-box h3 {
+            color: #FFFFFF !important;
+            border-bottom: 2px solid #2C3E50;
+        }
+        .notif-dropdown {
+            display: none;
+            position: absolute;
+            top: 45px;
+            width: 380px !important;
+            max-width: 90vw;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            padding: 15px;
+            z-index: 1000;
+        }
+        body[data-lang="ar"] .notif-dropdown {
+            left: 0;
+            right: auto;
+            text-align: right;
+        }
+        body[data-lang="en"] .notif-dropdown {
+            right: 0;
+            left: auto;
+            text-align: left;
+        }
+        body.dark-mode .notif-dropdown {
+            background: #1A2235;
+            border: 1px solid #2C3E50;
+            color: white;
+        }
+        .notification-item {
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            display: block !important;
+            line-height: 1.6 !important;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        body[data-lang="ar"] .notification-item {
+            text-align: right;
+        }
+        body[data-lang="en"] .notification-item {
+            text-align: left;
+        }
+        body.dark-mode .notification-item {
+            border-bottom: 1px solid #2C3E50;
+        }
+        .clear-notif-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            width: 100%;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body data-lang="ar">
+
+    <audio id="adminAlarmSound" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" preload="auto"></audio>
+
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" onerror="this.onerror=null; this.src='https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg';" alt="Logo" class="logo-img">
+            <h2>Lost & Found<br><span style="font-size: 13px; color: white; font-weight:500;">Management System</span></h2>
+        </div>
+        <ul>
+            <li><a href="{{ url_for('admin_dashboard') }}" class="active auto-trans" data-ar="لوحة القيادة"><i class="fa-solid fa-chart-pie"></i> لوحة القيادة</a></li>
+            <li><a href="{{ url_for('lost_reports_admin') }}" class="auto-trans" data-ar="المفقودات"><i class="fa-solid fa-search"></i> المفقودات</a></li>
+            <li><a href="{{ url_for('found_reports_admin') }}" class="auto-trans" data-ar="المعثورات"><i class="fa-solid fa-hand-holding-heart"></i> المعثورات</a></li>
+            <li><a href="{{ url_for('matches') }}" class="auto-trans" data-ar="المطابقات"><i class="fa-solid fa-robot"></i> المطابقات</a></li>
+            <li><a href="{{ url_for('staff_manage') }}" class="auto-trans" data-ar="الموظفين"><i class="fa-solid fa-users-gear"></i> الموظفين</a></li>
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+            <li><a href="#" class="theme-toggle"><i class="fa-solid fa-moon"></i> <span class="auto-trans" data-ar="الوضع الليلي">الوضع الليلي</span></a></li>
+            <li><a href="#" class="lang-toggle"><i class="fa-solid fa-globe"></i> English</a></li>
+            <li><a href="{{ url_for('logout') }}" style="color: #ff7675;"><i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="auto-trans" data-ar="تسجيل خروج">تسجيل خروج</span></a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <header class="admin-header">
+            <div>
+                <h2 class="auto-trans" data-ar="مرحباً بك، مدير النظام">مرحباً بك، مدير النظام</h2>
+                <p class="auto-trans" data-ar="إليك إحصائيات النظام اليوم">إليك إحصائيات النظام اليوم</p>
+            </div>
+            <div style="position: relative;">
+                <i class="fa-solid fa-bell" id="bellIcon" style="font-size: 28px; color: var(--primary); cursor: pointer;"></i>
+                {% if recent_reports|length > 0 %}
+                <span id="notifBadge" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; font-weight: bold;">{{ recent_reports|length }}</span>
+                {% endif %}
+                <div id="notifDropdown" class="notif-dropdown">
+                    <h4 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;" class="auto-trans" data-ar="الإشعارات (تقارير الموظفين)">الإشعارات (تقارير الموظفين)</h4>
+                    <div style="max-height: 250px; overflow-y: auto; overflow-x: hidden;">
+                        {% for rep in recent_reports %}
+                        <div class="notification-item" onclick="window.location.href='{{ url_for('staff_manage') }}?edit_id={{ rep.staff_id }}'">
+                            <strong style="color: var(--secondary);">{{ rep.date_submitted }}</strong><br>
+                            <span class="auto-trans" data-ar="{{ rep.report_text }}">{{ rep.report_text }}</span>
+                        </div>
+                        {% else %}
+                        <p style="font-size: 13px; color: gray;" class="auto-trans" data-ar="لا توجد تقارير جديدة">لا توجد تقارير جديدة</p>
+                        {% endfor %}
+                    </div>
+                    {% if recent_reports|length > 0 %}
+                    <form action="{{ url_for('delete_reports') }}" method="POST">
+                        <button type="submit" class="clear-notif-btn auto-trans" data-ar="مسح الكل">مسح الكل</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, msg in messages %}
+        <div style="background: {% if category == 'success' %}#2ecc71{% else %}#e74c3c{% endif %}; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-weight: bold;" class="auto-trans" data-ar="{{ msg }}">{{ msg }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="dashboard-cards">
+            <div class="stat-card">
+                <div><p class="auto-trans" data-ar="إجمالي المفقودات">إجمالي المفقودات</p><h3>{{ stats.lost }}</h3></div><i class="fa-solid fa-box-open"></i>
+            </div>
+            <div class="stat-card">
+                <div><p class="auto-trans" data-ar="إجمالي المعثورات">إجمالي المعثورات</p><h3>{{ stats.found }}</h3></div><i class="fa-solid fa-warehouse"></i>
+            </div>
+            <div class="stat-card" style="border-bottom-color: var(--success);" onclick="document.getElementById('matchesDetailModal').style.display='flex'">
+                <div><p class="auto-trans" data-ar="المطابقات النشطة">المطابقات النشطة</p><h3 style="color: var(--success);">{{ stats.matches }}</h3></div><i class="fa-solid fa-robot" style="color: rgba(39, 174, 96, 0.4);"></i>
+            </div>
+        </div>
+
+        <div class="map-container" id="mapContainerBox">
+            <div class="map-header">
+                <h3 class="auto-trans" data-ar="خريطة المطار الرسمية"><i class="fa-solid fa-map-location-dot"></i> خريطة المطار الرسمية</h3>
+                <div>
+                    <button id="expandMapBtn" class="btn-primary-custom auto-trans" style="width: auto;" data-ar="تكبير الخريطة"><i class="fa-solid fa-expand"></i> تكبير الخريطة</button>
+                    <button id="closeMapBtn" class="close-map-btn auto-trans" data-ar="إغلاق الخريطة"><i class="fa-solid fa-xmark"></i> إغلاق الخريطة</button>
+                </div>
+            </div>
+
+            <div class="smart-map" id="adminRadarMap">
+                <div class="radar-alert" id="adminLiveAlert" style="display: none;">
+                    <div class="ping" id="pingCircle"></div>
+                    <i class="fa-solid fa-location-dot" id="alertIcon"></i>
+                    <div class="alert-label" id="alertLabelText" style="direction: ltr;"></div>
+                </div>
+
+                <div class="map-pin" style="top: 15%; left: 20%;"><i class="fa-solid fa-plane-departure icon-pin"></i><span class="label auto-trans" data-ar="مدرج الطائرات">مدرج الطائرات</span></div>
+                <div class="map-pin" style="top: 15%; left: 50%;"><i class="fa-solid fa-plane-arrival icon-pin"></i><span class="label auto-trans" data-ar="ساحة الطائرات">ساحة الطائرات</span></div>
+                <div class="map-pin" style="top: 15%; left: 80%;"><i class="fa-solid fa-tower-observation icon-pin" style="color:#f1c40f;"></i><span class="label auto-trans" data-ar="برج المراقبة">برج المراقبة</span></div>
+                <div class="map-pin" style="top: 35%; left: 20%;"><i class="fa-solid fa-warehouse icon-pin"></i><span class="label auto-trans" data-ar="حظائر الطائرات">حظائر الطائرات</span></div>
+                <div class="map-pin" style="top: 35%; left: 50%;"><i class="fa-solid fa-door-open icon-pin"></i><span class="label auto-trans" data-ar="بوابات الصعود">بوابات الصعود</span></div>
+                <div class="map-pin" style="top: 35%; left: 80%;"><i class="fa-solid fa-plane-circle-check icon-pin" style="color:var(--primary);"></i><span class="label auto-trans" data-ar="صالة المغادرة">صالة المغادرة</span></div>
+                <div class="map-pin" style="top: 55%; left: 20%;"><i class="fa-solid fa-ticket icon-pin"></i><span class="label auto-trans" data-ar="مكاتب التسجيل">مكاتب التسجيل</span></div>
+                <div class="map-pin" style="top: 55%; left: 50%;"><i class="fa-solid fa-shield-halved icon-pin" style="color:var(--danger);"></i><span class="label auto-trans" data-ar="التفتيش الأمني">التفتيش الأمني</span></div>
+                <div class="map-pin" style="top: 55%; left: 80%;"><i class="fa-solid fa-passport icon-pin"></i><span class="label auto-trans" data-ar="الجوازات">الجوازات</span></div>
+                <div class="map-pin" style="top: 75%; left: 20%;"><i class="fa-solid fa-shop icon-pin" style="color:#9b59b6;"></i><span class="label auto-trans" data-ar="السوق الحرة">السوق الحرة</span></div>
+                <div class="map-pin pin-storage" style="top: 75%; left: 50%;"><i class="fa-solid fa-box-open icon-pin"></i><span class="label auto-trans" data-ar="المستودع الرئيسي">المستودع الرئيسي</span></div>
+                <div class="map-pin" style="top: 75%; left: 80%;"><i class="fa-solid fa-suitcase-rolling icon-pin"></i><span class="label auto-trans" data-ar="استلام الأمتعة">استلام الأمتعة</span></div>
+                <div class="map-pin" style="top: 92%; left: 20%;"><i class="fa-solid fa-users-gear icon-pin" style="color:#3498db;"></i><span class="label auto-trans" data-ar="مكتب الموظفين" style="border: 1px solid #3498db; color: #3498db;">مكتب الموظفين</span></div>
+                <div class="map-pin" style="top: 92%; left: 40%;"><i class="fa-solid fa-mug-hot icon-pin"></i><span class="label auto-trans" data-ar="كافتيريا">كافتيريا</span></div>
+                <div class="map-pin" style="top: 92%; left: 60%;"><i class="fa-solid fa-door-open icon-pin" style="color:var(--primary);"></i><span class="label auto-trans" data-ar="صالة الوصول">صالة الوصول</span></div>
+                <div class="map-pin" style="top: 92%; left: 80%;"><i class="fa-solid fa-car icon-pin"></i><span class="label auto-trans" data-ar="مواقف سيارات">مواقف سيارات</span></div>
+
+                {% for staff in staff_list %}
+                {% if staff.status in ['active', 'نشط', 'Active'] %}
+                {% set pin_color = '#fca311' %}
+                {% set pin_icon = 'fa-user-shield' %}
+
+                {% if staff.role == 'موظف أمتعة' or staff.role == 'Luggage Staff' %}
+                {% set pin_color = '#3498db' %}
+                {% set pin_icon = 'fa-suitcase-rolling' %}
+                {% elif staff.role == 'فريق الاسترجاع' or staff.role == 'Recovery Team' %}
+                {% set pin_color = '#9b59b6' %}
+                {% set pin_icon = 'fa-truck-fast' %}
+                {% endif %}
+
+                <div class="security-staff" id="staff_{{ staff.id }}" style="top: 50%; left: 50%; border-color: {{ pin_color }};">
+                    <i class="fa-solid {{ pin_icon }}" style="color: {{ pin_color }};"></i>
+                    <span class="auto-trans" data-ar="{{ staff.fullname.split(' ')[0] }}">{{ staff.fullname.split(' ')[0] }}</span>
+
+                    <div class="staff-tooltip" style="border-color: {{ pin_color }};">
+                        <strong style="color: {{ pin_color }}; font-size: 14px;">{{ staff.fullname }}</strong><br>
+                        <span style="color: #bdc3c7;">ID: {{ staff.emp_id }}</span><br>
+                        <span style="color: #2ecc71;" class="auto-trans" data-ar="المنصب:">المنصب:</span> <span class="auto-trans" data-ar="{{ staff.role }}">{{ staff.role }}</span><br>
+                        <span style="color: #3498db;"><i class="fa-solid fa-signal"></i> <span class="auto-trans" data-ar="متصل (في الميدان)">متصل (في الميدان)</span></span>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="map-legend">
+                <div class="legend-item" style="border-color: #ff4757;"><i class="fa-solid fa-location-dot" style="color: #ff4757; font-size: 18px;"></i> <span class="auto-trans" data-ar="بلاغ مفقود">بلاغ مفقود</span></div>
+                <div class="legend-item" style="border-color: #2ecc71;"><i class="fa-solid fa-location-dot" style="color: #2ecc71; font-size: 18px;"></i> <span class="auto-trans" data-ar="بلاغ معثور عليه">بلاغ معثور عليه</span></div>
+                <div class="legend-item" style="border-color: #2ecc71;"><i class="fa-solid fa-box-open" style="color: #2ecc71; font-size: 18px;"></i> <span class="auto-trans" data-ar="المستودع الرئيسي">المستودع الرئيسي</span></div>
+                <div class="legend-item" style="border-color: #fca311;"><i class="fa-solid fa-user-shield" style="color: #fca311; font-size: 18px;"></i> <span class="auto-trans" data-ar="موظف أمن">موظف أمن</span></div>
+                <div class="legend-item" style="border-color: #3498db;"><i class="fa-solid fa-suitcase-rolling" style="color: #3498db; font-size: 18px;"></i> <span class="auto-trans" data-ar="موظف أمتعة">موظف أمتعة</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="matchesDetailModal">
+        <div class="modal-box">
+            <h3 style="color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px;" class="auto-trans" data-ar="تفاصيل المطابقات النشطة">تفاصيل المطابقات النشطة</h3>
+            <ul class="details-list" style="list-style: none; padding: 0;">
+                <li><strong class="auto-trans" data-ar="الإلكترونيات">الإلكترونيات</strong> <span style="font-weight:bold; color:var(--primary);">{{ stats.matches_details['Electronics'] }}</span></li>
+                <li><strong class="auto-trans" data-ar="الوثائق الرسمية">الوثائق الرسمية</strong> <span style="font-weight:bold; color:var(--primary);">{{ stats.matches_details['Official Documents'] }}</span></li>
+                <li><strong class="auto-trans" data-ar="الحقائب والأمتعة">الحقائب والأمتعة</strong> <span style="font-weight:bold; color:var(--primary);">{{ stats.matches_details['Bags & Luggage'] }}</span></li>
+                <li><strong class="auto-trans" data-ar="متعلقات شخصية">متعلقات شخصية</strong> <span style="font-weight:bold; color:var(--primary);">{{ stats.matches_details['Personal Items'] }}</span></li>
+                <li><strong class="auto-trans" data-ar="أخرى">أخرى</strong> <span style="font-weight:bold; color:var(--primary);">{{ stats.matches_details['Others'] }}</span></li>
+            </ul>
+            <div class="modal-actions">
+                <button class="btn-cancel auto-trans" data-ar="إغلاق" onclick="document.getElementById('matchesDetailModal').style.display='none'">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/global.js') }}"></script>
+    <script>
+        const reportKeywords = {
+            "الرقم الوظيفي:": "Staff ID:",
+            "التفاصيل:": "Details:",
+            "جولة تفتيشية ميدانية": "Field Inspection",
+            "صباحي (A)": "Morning (A)",
+            "مسائي (B)": "Evening (B)",
+            "ليلي (C)": "Night (C)",
+            "مهام أخرى": "Other Tasks",
+            "تأمين مفقودات": "Securing Lost Items",
+            "تسليم عهدة / غرض": "Item Handover",
+            "قام بجولة تفتيشية في صالة المغادرين وتم العثور على حقيبة وتأمينها.": "Conducted a patrol in the departure hall, found and secured a bag.",
+            "استلم وردية مسائية وأتم جرد المستودع بشكل كامل بدون أخطاء.": "Took the evening shift and completed the warehouse inventory without errors.",
+            "ساعد مسافراً في العثور على جواز سفره المفقود بالقرب من البوابة 14.": "Helped a passenger find his lost passport near Gate 14.",
+            "تعاملت مع بلاغ فقدان هاتف محمول وتمكنت من تحديد موقعه وتسليمه.": "Handled a lost mobile phone report, successfully located and delivered it."
+        };
+
+        const dict = {
+            "لوحة القيادة": "Dashboard", "المفقودات": "Lost Reports", "المعثورات": "Found Reports", "المطابقات": "Matches", "الموظفين": "Staff Mgmt",
+            "مرحباً بك، مدير النظام": "Welcome, System Admin", "إليك إحصائيات النظام اليوم": "Here are today's system statistics",
+            "إجمالي المفقودات": "Total Lost Items", "إجمالي المعثورات": "Total Found Items", "المطابقات النشطة": "Active Matches",
+            "خريطة المطار الرسمية": "Official Airport Map", "تكبير الخريطة": "Expand Map", "إغلاق الخريطة": "Close Map",
+            "مدرج الطائرات": "Runways", "ساحة الطائرات": "Apron", "برج المراقبة": "Control Tower", "حظائر الطائرات": "Hangars", "بوابات الصعود": "Gates", "صالة المغادرة": "Departure Hall",
+            "مكاتب التسجيل": "Check-in Desks", "التفتيش الأمني": "Security Checkpoint", "الجوازات": "Passport Control", "المستودع الرئيسي": "Main Storage", "السوق الحرة": "Duty Free", "استلام الأمتعة": "Baggage Claim",
+            "مكتب الموظفين": "Staff Office", "كافتيريا": "Cafeteria", "صالة الوصول": "Arrival Hall", "مواقف سيارات": "Parking",
+            "بلاغ مفقود": "Lost Alert", "بلاغ معثور عليه": "Found Alert", "موظف أمن": "Security Guard", "موظف أمتعة": "Luggage Staff", "فريق استرجاع": "Recovery Team",
+            "المنصب:": "Role:", "متصل (في الميدان)": "Online (In Field)", "الوضع الليلي": "Dark Mode", "تسجيل خروج": "Logout",
+            "الإلكترونيات": "Electronics", "متعلقات شخصية": "Personal Items", "الوثائق الرسمية": "Official Documents", "الحقائب والأمتعة": "Bags & Luggage", "أخرى": "Others",
+            "تفاصيل المطابقات النشطة": "Active Matches Details", "إغلاق": "Close", "الإشعارات (تقارير الموظفين)": "Notifications (Staff Reports)", "لا توجد تقارير جديدة": "No new reports", "مسح الكل": "Clear All",
+            "تم مسح جميع الإشعارات بنجاح.": "All notifications cleared successfully.",
+            "نور": "Noor", "عمر": "Omar", "سارة": "Sara", "طارق": "Tareq", "ليلى": "Laila", "يوسف": "Yousef",
+            "ايفون 13 أحمر": "Red iPhone 13", "محفظة جلد بنية": "Brown Leather Wallet", "جواز سفر سوري": "Syrian Passport", "لابتوب ماك بوك": "MacBook Laptop", "ساعة كاسيو": "Casio Watch", "حقيبة سفر زرقاء": "Blue Suitcase", "نظارات شمسية ريبان": "Ray-Ban Sunglasses", "مفاتيح سيارة كيا": "Kia Car Keys", "حقيبة يد نسائية سوداء": "Black Women's Handbag", "تابلت سامسونج": "Samsung Tablet", "بطاقة بنك إسلامي": "Islamic Bank Card", "شاحن تايب سي": "Type-C Charger", "ملف أوراق خضراء": "Green Documents Folder", "جاكيت جلد أسود": "Black Leather Jacket", "عطر رجالي ديور": "Dior Men's Perfume", "سماعات جي بي ال": "JBL Headphones",
+            "ايفون لونه أحمر عليه كفر": "Red iPhone with Case", "محفظة رجالية فيها هويات": "Men's Wallet with IDs", "لابتوب ابل فضي": "Silver Apple Laptop", "شنطة سفر لون أزرق": "Blue Travel Bag", "نظارات شمسية": "Sunglasses", "مفتاح سيارة مع ميدالية كيا": "Car Key with Kia Keychain", "تابلت شاشته كبيرة": "Large Screen Tablet", "فيزا كارد بنك إسلامي": "Islamic Bank Visa Card", "جاكيت شتوي أسود": "Black Winter Jacket", "كيس سوق حرة فيه عطر": "Duty Free Bag with Perfume", "جواز سفر مصري": "Egyptian Passport",
+            "iPhone 17 أبيض، عليه كفر شفاف فيه خدوش خفيفة.": "White iPhone 17, with a clear case having slight scratches.",
+            "حقيبة يد سوداء صغيرة تحتوي على محفظة وبطاقات بنكية.": "Small black handbag containing a wallet and bank cards.",
+            "سماعات AirPods برو داخل علبة بيضاء.": "AirPods Pro inside a white case.",
+            "لابتوب Dell رمادي داخل شنطة سوداء.": "Grey Dell laptop inside a black bag.",
+            "جواز سفر أردني باسم محمد خالد.": "Jordanian passport in the name of Mohammad Khaled.",
+            "ساعة ذكية Apple Watch سوداء.": "Black Apple Watch smartwatch.",
+            "حقيبة سفر كبيرة لون أزرق عليها شريط أحمر.": "Large blue suitcase with a red ribbon.",
+            "هاتف سامسونج Galaxy S23 أسود.": "Black Samsung Galaxy S23 phone.",
+            "نظارة شمس Ray-Ban سوداء.": "Black Ray-Ban sunglasses.",
+            "هاتف Google Pixel 8 أسود مع كفر أزرق.": "Black Google Pixel 8 phone with a blue case.",
+            "حقيبة لابتوب سوداء تحتوي على شاحن وماوس": "Black laptop bag containing a charger and mouse.",
+            "سماعات Beats حمراء لاسلكية.": "Red wireless Beats headphones.",
+            "ساعة كلاسيكية فضية بسوار معدني": "Silver classic watch with a metal band.",
+            "نظارة طبية بإطار أسود داخل علبة.": "Prescription glasses with a black frame inside a case.",
+            "جهاز Nintendo Switch مع حقيبة صغيرة": "Nintendo Switch device with a small bag.",
+            "تم العثور على هاتف أبيض حديث داخل كفر شفاف.": "Found a modern white phone inside a clear case.",
+            "حقيبة نسائية صغيرة سوداء تحتوي على بطاقات ومحفظة.": "Small black women's handbag containing cards and a wallet.",
+            "علبة سماعات لاسلكية بيضاء.": "White wireless earphones case.",
+            "جهاز لابتوب داخل حقيبة سوداء.": "Laptop device inside a black bag.",
+            "وثيقة سفر (Passport) باسم شخص.": "Travel document (Passport) in someone's name.",
+            "ساعة يد ذكية سوداء.": "Black smartwatch.",
+            "شنطة سفر زرقاء كبيرة مع شريط ملون.": "Large blue travel bag with a colored ribbon.",
+            "هاتف ذكي أسود.": "Black smartphone.",
+            "نظارات شمسية داكنة.": "Dark sunglasses.",
+            "هاتف ذكي أسود داخل غطاء أزرق.": "Black smartphone inside a blue cover.",
+            "حقيبة كمبيوتر محمولة بداخلها ملحقات.": "Laptop bag with accessories inside.",
+            "سماعات رأس لاسلكية باللون الأحمر.": "Red wireless headphones.",
+            "ساعة يد فضية تقليدية.": "Traditional silver wristwatch.",
+            "نظارات طبية بإطار داكن داخل حافظة.": "Prescription glasses with a dark frame inside a case.",
+            "جهاز ألعاب محمول مع حقيبة": "Portable gaming device with a bag.",
+            "مفتاح سيارة مرسيدس مع ميدالية جلدية": "Mercedes car key with leather keychain",
+            "كاميرا Canon احترافية مع عدسة 50mm": "Professional Canon camera with 50mm lens",
+            "ملف بلاستيكي أزرق يحتوي على شهادات جامعية": "Blue plastic folder containing university degrees",
+            "ساعة يد رولكس فضية": "Silver Rolex wristwatch",
+            "حقيبة ظهر للأطفال لونها وردي مع رسمة قطة": "Pink kids backpack with a cat drawing",
+            "أحمد خليل": "Ahmad Khalil", "سارة محمود": "Sara Mahmoud", "عمر زيد": "Omar Zaid", "فرح علي": "Farah Ali", "محمد خالد": "Mohammad Khaled", "ليلى حسن": "Laila Hassan", "زيد طارق": "Zaid Tareq", "رامي يوسف": "Rami Yousef", "نور الدين": "Noor Al-Deen", "ياسر كمال": "Yaser Kamal", "سامي خليل": "Sami Khalil", "ماجد علي": "Majed Ali", "حسام محمد": "Husam Mohammad", "رنا احمد": "Rana Ahmad", "عمر محمود": "Omar Mahmoud",
+            "سند الخصاونة": "Sanad Al-Khasawneh", "فيصل العبادي": "Faisal Al-Abbadi", "رندة المجالي": "Randa Al-Majali", "بشار العدوان": "Bashar Al-Adwan", "مها الطراونة": "Maha Al-Tarawneh"
+        };
+
+        function translateAll() {
+            let lang = document.body.getAttribute('data-lang') || 'ar';
+            
+            document.querySelectorAll('.auto-trans').forEach(el => {
+                let arText = el.getAttribute('data-ar');
+                if (!arText) return;
+
+                let enText = dict[arText];
+                
+                if (!enText) {
+                    enText = arText;
+                    for (let key in reportKeywords) {
+                        if (enText.includes(key)) {
+                            enText = enText.split(key).join(reportKeywords[key]);
+                        }
+                    }
+                }
+
+                if (lang === 'en') {
+                    if (el.children.length === 0) {
+                        el.innerText = enText;
+                    } else {
+                        if (el.innerHTML.includes(arText)) {
+                            el.innerHTML = el.innerHTML.replace(arText, enText);
+                        }
+                    }
+                } else {
+                    if (el.children.length === 0) {
+                        el.innerText = arText;
+                    } else {
+                        if (enText && el.innerHTML.includes(enText)) {
+                            el.innerHTML = el.innerHTML.replace(enText, arText);
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            translateAll();
+            const observer = new MutationObserver(translateAll);
+            observer.observe(document.body, { attributes: true, attributeFilter: ['data-lang'] });
+
+            document.getElementById('bellIcon').addEventListener('click', function (e) {
+                let dropdown = document.getElementById('notifDropdown');
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                let badge = document.getElementById('notifBadge');
+                if (badge) badge.style.display = 'none';
+                e.stopPropagation();
+            });
+            document.addEventListener('click', function(e) {
+                let dropdown = document.getElementById('notifDropdown');
+                if (dropdown && !dropdown.contains(e.target) && e.target.id !== 'bellIcon') {
+                    dropdown.style.display = 'none';
+                }
+            });
+        });
+
+        document.getElementById('expandMapBtn')?.addEventListener('click', function () {
+            document.getElementById('mapContainerBox').classList.add('fullscreen');
+        });
+        document.getElementById('closeMapBtn')?.addEventListener('click', function () {
+            document.getElementById('mapContainerBox').classList.remove('fullscreen');
+        });
+
+        function getTargetCoords(locStr) {
+            let loc = (locStr || "").toLowerCase();
+            if (loc.includes('تفتيش') || loc.includes('security')) return {top: "55%", left: "50%"};
+            if (loc.includes('سوق') || loc.includes('duty')) return {top: "75%", left: "20%"};
+            if (loc.includes('بواب') || loc.includes('gate')) return {top: "35%", left: "50%"};
+            if (loc.includes('أمتعة') || loc.includes('baggage')) return {top: "75%", left: "80%"};
+            if (loc.includes('كافتيريا') || loc.includes('cafe')) return {top: "92%", left: "40%"};
+            if (loc.includes('مواقف') || loc.includes('parking')) return {top: "92%", left: "80%"};
+            if (loc.includes('جوازات') || loc.includes('passport')) return {top: "55%", left: "80%"};
+            if (loc.includes('مكتب') || loc.includes('office')) return {top: "92%", left: "20%"};
+            return {top: "35%", left: "50%"};
+        }
+
+        const liveReports = [
+            {% for item in recent_lost %} { name: "{{ item.item_name }}", type: "lost", loc: "{{ item.location }}" }, {% endfor %}
+            {% for item in recent_found %} { name: "{{ item.item_name }}", type: "found", loc: "{{ item.location }}" }, {% endfor %}
+        ];
+
+        let currentReportIndex = 0;
+        const adminAlert = document.getElementById('adminLiveAlert');
+        const alertLabel = document.getElementById('alertLabelText');
+        const pingCircle = document.getElementById('pingCircle');
+        const alertIcon = document.getElementById('alertIcon');
+        const audio = document.getElementById('adminAlarmSound');
+
+        function showNextReport() {
+            if(liveReports.length === 0) return;
+
+            let report = liveReports[currentReportIndex];
+            let coords = getTargetCoords(report.loc);
+            let color = report.type === 'lost' ? '#ff4757' : '#2ecc71';
+
+            adminAlert.style.top = coords.top;
+            adminAlert.style.left = coords.left;
+            adminAlert.style.display = 'block';
+
+            pingCircle.style.borderColor = color;
+            pingCircle.style.backgroundColor = color + '33';
+            alertIcon.style.color = color;
+            alertLabel.style.backgroundColor = color;
+
+            let lang = document.body.getAttribute('data-lang');
+            let arabicText = (report.type === 'lost' ? '🚨 مفقود: ' : '✅ معثور: ') + report.name;
+            let englishText = (report.type === 'lost' ? '🚨 Lost: ' : '✅ Found: ') + (dict[report.name] || report.name);
+            dict[arabicText] = englishText;
+
+            alertLabel.setAttribute('data-ar', arabicText);
+            alertLabel.innerText = lang === 'en' ? englishText : arabicText;
+
+            let playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    document.body.addEventListener('click', () => audio.play(), {once: true});
+                });
+            }
+
+            currentReportIndex = (currentReportIndex + 1) % liveReports.length;
+        }
+
+        if(liveReports.length > 0) {
+            setTimeout(showNextReport, 1000);
+            setInterval(showNextReport, 7000);
+        }
+
+        const patrolZones = [
+            {top: '25%', left: '35%'}, {top: '25%', left: '65%'},
+            {top: '45%', left: '30%'}, {top: '45%', left: '70%'},
+            {top: '65%', left: '35%'}, {top: '65%', left: '65%'},
+            {top: '85%', left: '25%'}, {top: '85%', left: '75%'}
+        ];
+
+        function moveStaffSmoothly(staffId) {
+            const staff = document.getElementById(staffId);
+            if (!staff) return;
+
+            const initialPt = patrolZones[Math.floor(Math.random() * patrolZones.length)];
+            staff.style.top = (parseFloat(initialPt.top) + (Math.random() * 4 - 2)) + '%';
+            staff.style.left = (parseFloat(initialPt.left) + (Math.random() * 4 - 2)) + '%';
+
+            setInterval(() => {
+                const pt = patrolZones[Math.floor(Math.random() * patrolZones.length)];
+                const rTop = parseFloat(pt.top) + (Math.random() * 6 - 3);
+                const rLeft = parseFloat(pt.left) + (Math.random() * 6 - 3);
+                staff.style.top = rTop + '%';
+                staff.style.left = rLeft + '%';
+            }, 6000 + (Math.random() * 2000));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            {% for staff in staff_list %}
+            {% if staff.status in ['active', 'نشط', 'Active'] %}
+                setTimeout(() => moveStaffSmoothly('staff_{{ staff.id }}'), Math.random() * 1000);
+            {% endif %}
+            {% endfor %}
+        });
+    </script>
+</body>
+</html>

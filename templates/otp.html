@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP - Lost & Found</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <style>
+        .logo-container {
+            width: 90px;
+            height: 90px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 3px solid var(--secondary);
+            overflow: hidden;
+        }
+
+            .logo-container img {
+                max-height: 70%;
+                width: auto;
+            }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin: 0 5px;
+            font-family: inherit;
+        }
+
+            .otp-input:focus {
+                border-color: var(--secondary);
+                outline: none;
+                box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+            }
+
+        .auth-page-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f4f7f6;
+            padding: 20px;
+        }
+
+        .auth-box-container {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .top-buttons-auth {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        body.dark-mode .auth-page-wrapper {
+            background-color: #121620;
+        }
+
+        body.dark-mode .auth-box-container {
+            background-color: #1A2235;
+            color: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .otp-input {
+            background-color: #121620;
+            color: white;
+            border-color: #34495e;
+        }
+    </style>
+</head>
+<body data-lang="ar">
+
+    <div class="auth-page-wrapper">
+        <div class="top-buttons-auth">
+            <a href="{{ url_for('login') }}" class="top-btn-auth"><i class="fa-solid fa-house"></i></a>
+            <button class="top-btn-auth lang-toggle text-only" id="langToggleBtn">EN</button>
+        </div>
+
+        <div class="auth-box-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert" style="color: {% if category == 'success' %}#2ecc71{% else %}#e74c3c{% endif %}; margin-bottom: 15px; text-align: center; font-weight: bold; background: {% if category == 'success' %}#eafaf1{% else %}#fadbd8{% endif %}; padding: 10px; border-radius: 8px;">
+                <span class="auto-trans" data-ar="{{ message }}">{{ message }}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='logo.jpg') }}"
+                     onerror="this.onerror=null; this.src='https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg';"
+                     alt="Logo">
+            </div>
+
+            <h2 class="auto-trans" data-ar="التحقق من البريد" style="color: var(--primary); font-weight: 800; margin-bottom: 10px;">التحقق من البريد</h2>
+            <p class="auto-trans" data-ar="أدخل الرمز المكون من 4 أرقام" style="color: gray; margin-bottom: 20px; font-size: 14px;">أدخل الرمز المكون من 4 أرقام</p>
+
+            <form action="{{ url_for('otp') }}" method="POST">
+                <input type="hidden" name="mode" value="{{ mode }}">
+
+                <div style="display: flex; gap: 5px; justify-content: center; margin-bottom: 25px; direction: ltr;">
+                    <input type="text" name="digit1" maxlength="1" class="otp-input" autofocus required>
+                    <input type="text" name="digit2" maxlength="1" class="otp-input" required>
+                    <input type="text" name="digit3" maxlength="1" class="otp-input" required>
+                    <input type="text" name="digit4" maxlength="1" class="otp-input" required>
+                </div>
+
+                <button type="submit" class="auto-trans" data-ar="التحقق والمتابعة" style="width: 100%; background: var(--secondary); color: var(--primary); border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; font-family: inherit; transition: 0.3s;">التحقق والمتابعة</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/global.js') }}"></script>
+
+    <script>
+        const inputs = document.querySelectorAll('.otp-input');
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', () => {
+                input.value = input.value.replace(/[^0-9]/g, '');
+                if (input.value.length === 1 && index < inputs.length - 1) inputs[index + 1].focus();
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && input.value === '' && index > 0) inputs[index - 1].focus();
+            });
+        });
+
+        const dict = {
+            'التحقق من البريد': 'Email Verification',
+            'أدخل الرمز المكون من 4 أرقام': 'Enter the 4-digit code',
+            'التحقق والمتابعة': 'Verify and Continue',
+
+            'رمز التحقق هو 1234 (وضع التجربة)': 'OTP code is 1234 (Test Mode)',
+            'البريد الإلكتروني غير مسجل في النظام': 'Email is not registered',
+            'البريد الإلكتروني مسجل مسبقاً!': 'Email already registered!',
+            'كلمات المرور غير متطابقة!': 'Passwords do not match!',
+            'تم تفعيل حسابك بنجاح! يمكنك الآن تسجيل الدخول': 'Account created successfully! You can login now.',
+            'رمز التحقق غير صحيح': 'Invalid OTP code',
+            'تم التحقق بنجاح. (سيتم تفعيل تغيير كلمة المرور لاحقاً)': 'Verified successfully. (Reset feature coming soon)'
+        };
+
+        function translateAll() {
+            let lang = localStorage.getItem('appLang') || document.body.getAttribute('data-lang') || 'ar';
+            document.querySelectorAll('.auto-trans').forEach(el => {
+                let arText = el.getAttribute('data-ar');
+                if (arText) {
+                    arText = arText.trim();
+                    let enText = dict[arText] || arText;
+
+                    if (lang === 'en') {
+                        if (el.innerHTML.includes(arText)) {
+                            el.innerHTML = el.innerHTML.replace(arText, enText);
+                        } else if (el.textContent.trim() === arText) {
+                            el.textContent = enText;
+                        }
+                    } else {
+                        if (el.innerHTML.includes(enText)) {
+                            el.innerHTML = el.innerHTML.replace(enText, arText);
+                        } else if (el.textContent.trim() === enText) {
+                            el.textContent = arText;
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            translateAll();
+            const observer = new MutationObserver(translateAll);
+            observer.observe(document.body, { attributes: true, attributeFilter: ['data-lang'] });
+        });
+    </script>
+</body>
+</html>

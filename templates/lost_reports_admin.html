@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Lost Reports</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <style>
+        .admin-header {
+            background: var(--white, #ffffff);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .table-container {
+            background: var(--white, #ffffff);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            overflow-x: auto;
+            margin-top: 15px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .table-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .table-title {
+            color: var(--dark, #2c3e50);
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            flex: 1;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+            max-width: 300px;
+            width: 100%;
+        }
+
+            .search-box input {
+                width: 100%;
+                padding: 10px 35px 10px 15px;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                font-family: inherit;
+                font-size: 14px;
+                outline: none;
+                transition: 0.3s;
+            }
+
+                .search-box input:focus {
+                    border-color: #f39c12;
+                    box-shadow: 0 0 5px rgba(243, 156, 18, 0.2);
+                }
+
+            .search-box i {
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #7f8c8d;
+            }
+
+        body[data-lang="en"] .search-box input {
+            padding: 10px 15px 10px 35px;
+        }
+
+        body[data-lang="en"] .search-box i {
+            right: auto;
+            left: 12px;
+        }
+
+        .btn-export {
+            background-color: #217346;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+            .btn-export:hover {
+                background-color: #1e5a37;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 10px rgba(33, 115, 70, 0.3);
+            }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-align: right;
+            min-width: 1000px;
+        }
+
+        body[data-lang="en"] .admin-table {
+            text-align: left;
+        }
+
+        .admin-table th {
+            background-color: var(--dark, #2c3e50);
+            color: white;
+            padding: 15px 20px;
+            font-size: 14px;
+            white-space: nowrap;
+            font-weight: 700;
+            border-bottom: 3px solid #f39c12;
+        }
+
+            .admin-table th:first-child {
+                border-top-right-radius: 10px;
+            }
+
+            .admin-table th:last-child {
+                border-top-left-radius: 10px;
+            }
+
+        body[data-lang="en"] .admin-table th:first-child {
+            border-top-right-radius: 0;
+            border-top-left-radius: 10px;
+        }
+
+        body[data-lang="en"] .admin-table th:last-child {
+            border-top-left-radius: 0;
+            border-top-right-radius: 10px;
+        }
+
+        .admin-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: var(--dark, #2c3e50);
+            vertical-align: middle;
+            transition: 0.2s;
+        }
+
+        .admin-table tr:hover td {
+            background-color: #f8fbfd;
+        }
+
+        .sub-text {
+            font-size: 12px;
+            color: gray;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            color: white;
+            white-space: nowrap;
+            display: inline-block;
+            text-align: center;
+            min-width: 110px;
+        }
+
+        .status-lost {
+            background-color: rgba(243, 156, 18, 0.15);
+            color: var(--danger, #e74c3c);
+            border: 1px solid var(--danger, #e74c3c);
+        }
+
+        .status-claimed {
+            border-color: #3498db;
+            color: #3498db;
+            background-color: rgba(52, 152, 219, 0.15);
+        }
+
+        .delivery-done {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .delivery-not {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            padding: 0;
+        }
+
+        .btn-view {
+            background-color: #3498db;
+        }
+
+        .btn-edit {
+            background-color: #f39c12;
+        }
+
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-box {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: right;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        body[data-lang="en"] .modal-box {
+            text-align: left;
+        }
+
+        .item-image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: var(--danger, #e74c3c);
+        }
+
+        .detail-value {
+            color: var(--dark, #2c3e50);
+            word-break: break-word;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .btn-save {
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+        }
+
+        .btn-cancel {
+            background-color: var(--dark, #2c3e50);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+        }
+
+        select.edit-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-family: inherit;
+            margin-top: 10px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+            .sidebar ul {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                margin: 0;
+                padding: 0 0 20px 0;
+            }
+
+        .bottom-menu {
+            margin-top: auto;
+        }
+
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            margin: 2px 10px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+            .sidebar ul li a.active {
+                background: var(--secondary);
+                color: var(--primary);
+                font-weight: bold;
+                border-radius: 10px;
+            }
+
+        body.dark-mode .table-container, body.dark-mode .admin-header {
+            background-color: #1A2235 !important;
+            border: 1px solid #2C3E50 !important;
+        }
+
+            body.dark-mode .table-title, body.dark-mode .admin-header h2, body.dark-mode .admin-header p, body.dark-mode .admin-table th, body.dark-mode .admin-table td, body.dark-mode .admin-table td strong, body.dark-mode .sub-text, body.dark-mode .modal-box, body.dark-mode .detail-label, body.dark-mode .detail-value {
+                color: #FFFFFF !important;
+            }
+
+        body.dark-mode .status-claimed {
+            border-color: #60a5fa;
+            color: #60a5fa;
+            background-color: rgba(96, 165, 250, 0.15);
+        }
+
+        body.dark-mode .admin-table td {
+            border-bottom-color: #2C3E50;
+        }
+
+        body.dark-mode .admin-table tr:hover td {
+            background-color: #232d42;
+        }
+
+        body.dark-mode .search-box input {
+            background: #121620;
+            color: #E2E8F0;
+            border-color: #34495e;
+        }
+
+        body.dark-mode .modal-box {
+            background-color: #1A2235;
+            border-top: 5px solid var(--danger);
+        }
+
+        body.dark-mode .detail-row {
+            border-bottom-color: #2C3E50;
+        }
+
+        body.dark-mode select.edit-select {
+            background: #121620;
+            color: white;
+            border-color: #34495e;
+        }
+    </style>
+</head>
+<body data-lang="ar">
+
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" onerror="this.onerror=null; this.src='https://i.postimg.cc/MTQwFp6T/Whats-App-Image-2026-03-06-at-1-02-33-AM.jpg';" alt="Logo" class="logo-img">
+            <h2>Lost & Found<br><span style="font-size: 13px; color: white; font-weight:500;">Management System</span></h2>
+        </div>
+        <ul>
+            <li><a href="{{ url_for('admin_dashboard') }}" class="auto-trans" data-ar="لوحة القيادة">لوحة القيادة</a></li>
+            <li><a href="{{ url_for('lost_reports_admin') }}" class="active auto-trans" data-ar="المفقودات">المفقودات</a></li>
+            <li><a href="{{ url_for('found_reports_admin') }}" class="auto-trans" data-ar="المعثورات">المعثورات</a></li>
+            <li><a href="{{ url_for('matches') }}" class="auto-trans" data-ar="المطابقات">المطابقات</a></li>
+            <li><a href="{{ url_for('staff_manage') }}" class="auto-trans" data-ar="الموظفين">الموظفين</a></li>
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+            <li><a href="#" class="theme-toggle"><i class="fa-solid fa-moon"></i> <span class="auto-trans" data-ar="الوضع الليلي">الوضع الليلي</span></a></li>
+            <li><a href="#" class="lang-toggle"><i class="fa-solid fa-globe"></i> English</a></li>
+            <li><a href="{{ url_for('logout') }}" style="color: #ff7675;"><i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="auto-trans" data-ar="تسجيل خروج">تسجيل خروج</span></a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <header class="admin-header">
+            <div>
+                <h2><i class="fa-solid fa-heart-crack" style="color: var(--danger, #e74c3c);"></i> <span class="auto-trans" data-ar="إدارة المفقودات">إدارة المفقودات</span></h2>
+                <p class="auto-trans" data-ar="تتبع عمليات البحث وتسليم الأغراض المفقودة لأصحابها">تتبع عمليات البحث وتسليم الأغراض المفقودة لأصحابها</p>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for msg in messages %}
+        <div style="background: #2ecc71; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-weight: bold;" class="auto-trans" data-ar="{{ msg }}">{{ msg }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="table-container">
+            <div class="table-header-bar">
+                <h4 class="table-title auto-trans" data-ar="سجل المفقودات الحالي">سجل المفقودات الحالي</h4>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="ابحث بالاسم، الغرض، أو رقم البلاغ..." onkeyup="filterTable()">
+                    </div>
+                    <button class="btn-export" onclick="exportTableToExcel('lostTable', 'Lost_Reports')">
+                        <i class="fa-solid fa-file-excel"></i> <span class="auto-trans" data-ar="تصدير إلى Excel">تصدير إلى Excel</span>
+                    </button>
+                </div>
+            </div>
+
+            <table class="admin-table" id="lostTable">
+                <thead>
+                    <tr>
+                        <th class="auto-trans" data-ar="رقم البلاغ">رقم البلاغ</th>
+                        <th class="auto-trans" data-ar="صاحب البلاغ">صاحب البلاغ</th>
+                        <th class="auto-trans" data-ar="الغرض المفقود">الغرض المفقود</th>
+                        <th class="auto-trans" data-ar="المكان والتاريخ">المكان والتاريخ</th>
+                        <th class="auto-trans" data-ar="حالة البحث">حالة البحث</th>
+                        <th class="auto-trans" data-ar="حالة التسليم">حالة التسليم</th>
+                        <th class="no-export auto-trans" data-ar="الإجراءات">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td><strong>#LST-{{ item.id }}</strong></td>
+                        <td style="font-weight: bold;"><span class="auto-trans" data-ar="{{ item.reporter_name }}">{{ item.reporter_name }}</span></td>
+                        <td><span class="auto-trans" data-ar="{{ item.item_name }}">{{ item.item_name }}</span><br><span class="sub-text auto-trans" data-ar="{{ item.category }}">{{ item.category }}</span></td>
+                        <td><span class="auto-trans" data-ar="{{ item.location }}">{{ item.location }}</span><br><span class="sub-text auto-trans" data-ar="{{ item.date_lost }}">{{ item.date_lost }}</span></td>
+                        <td>
+                            {% if item.status == 'Searching' %}
+                            <span class="status-badge status-lost"><i class="fa-solid fa-magnifying-glass"></i> <span class="auto-trans" data-ar="جاري البحث عن المفقود">جاري البحث عن المفقود</span></span>
+                            {% elif item.status == 'Found' %}
+                            <span class="status-badge status-claimed" style="background-color: rgba(46, 204, 113, 0.15); color: #2ecc71; border-color: #2ecc71;"><i class="fa-solid fa-warehouse"></i> <span class="auto-trans" data-ar="جاري البحث عن المالك (في المستودع)">جاري البحث عن المالك (في المستودع)</span></span>
+                            {% else %}
+                            <span class="status-badge status-claimed"><i class="fa-solid fa-check-double"></i> <span class="auto-trans" data-ar="تم تأكيد المالك (بانتظار التسليم)">تم تأكيد المالك (بانتظار التسليم)</span></span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.status == 'Delivered' %}
+                            <span class="status-badge delivery-done"><i class="fa-solid fa-handshake"></i> <span class="auto-trans" data-ar="تم التسليم">تم التسليم</span></span>
+                            {% elif item.status == 'Searching' %}
+                            <span class="status-badge delivery-not" style="background-color: #e74c3c;"><i class="fa-solid fa-times"></i> <span class="auto-trans" data-ar="غير متوفر">غير متوفر</span></span>
+                            {% else %}
+                            <span class="status-badge delivery-not"><i class="fa-solid fa-box"></i> <span class="auto-trans" data-ar="في المستودع">في المستودع</span></span>
+                            {% endif %}
+                        </td>
+                        <td class="no-export">
+                            <div class="action-btns">
+                                <button type="button" class="btn-icon btn-view" onclick="openViewModal('{{ item.item_name|replace("'", "\\'") }}', '{{ item.category|replace("'", "\\'") }}', '{{ item.color|replace("'", "\\'") }}', '{{ item.location|replace("'", "\\'") }}', '{{ item.date_lost|replace("'", "\\'") }}', '{{ item.description|replace('\n', ' ')|replace('\r', '')|replace("'", "\\'") }}', '{{ item.reporter_name|replace("'", "\\'") }}', '{{ item.image_file|replace("'", "\\'") }}')"><i class="fa-solid fa-eye"></i></button>
+                                <button type="button" class="btn-icon btn-edit" onclick="openEditModal({{ item.id }}, '{{ item.status }}')"><i class="fa-solid fa-pen-to-square"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 30px; font-weight: bold; color: gray;" class="auto-trans" data-ar="لا توجد بلاغات مفقودات حالياً.">
+                            لا توجد بلاغات مفقودات حالياً.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal-box">
+            <h3 style="color: var(--danger, #e74c3c); margin-bottom: 15px;"><i class="fa-solid fa-circle-info"></i> <span class="auto-trans" data-ar="تفاصيل المفقود">تفاصيل المفقود</span></h3>
+            <img id="viewImage" src="" alt="صورة الغرض" class="item-image-preview" onerror="this.src='{{ url_for('static', filename='uploads/default.jpg') }}'">
+
+            <div class="detail-row"><span class="detail-label auto-trans" data-ar="اسم الغرض:">اسم الغرض:</span><span class="detail-value auto-trans" id="viewName" data-ar=""></span></div>
+            <div class="detail-row"><span class="detail-label auto-trans" data-ar="الفئة:">الفئة:</span><span class="detail-value auto-trans" id="viewCategory" data-ar=""></span></div>
+            <div class="detail-row"><span class="detail-label auto-trans" data-ar="اللون:">اللون:</span><span class="detail-value auto-trans" id="viewColor" data-ar=""></span></div>
+            <div class="detail-row"><span class="detail-label auto-trans" data-ar="مكان الفقدان:">مكان الفقدان:</span><span class="detail-value auto-trans" id="viewLocation" data-ar=""></span></div>
+            <div class="detail-row"><span class="detail-label auto-trans" data-ar="تاريخ الفقدان:">تاريخ الفقدان:</span><span class="detail-value auto-trans" id="viewDate" data-ar=""></span></div>
+            <div class="detail-row"><span class="detail-label auto-trans" data-ar="اسم المُبلِغ:">اسم المُبلِغ:</span><span class="detail-value auto-trans" id="viewFinder" data-ar=""></span></div>
+            <div style="margin-top: 15px;">
+                <span class="detail-label auto-trans" data-ar="الوصف الإضافي:">الوصف الإضافي:</span>
+                <p class="detail-value auto-trans" id="viewDesc" data-ar="" style="margin-top: 5px; font-size: 13px; line-height: 1.5;"></p>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="document.getElementById('viewModal').style.display='none'"><i class="fa-solid fa-times"></i> <span class="auto-trans" data-ar="إغلاق">إغلاق</span></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-box">
+            <h3 style="color: #f39c12; margin-bottom: 15px;"><i class="fa-solid fa-pen-to-square"></i> <span class="auto-trans" data-ar="تعديل حالة المفقود">تعديل حالة المفقود</span></h3>
+            <form id="editForm" method="POST">
+                <label style="font-weight: bold; color: var(--danger, #e74c3c);" class="auto-trans" data-ar="حالة البحث والتسليم">حالة البحث والتسليم</label>
+                <select name="newStatus" id="editStatus" required class="edit-select" oninvalid="this.setCustomValidity(document.body.getAttribute('data-lang') === 'en' ? 'Please fill out this field' : 'يرجى ملء هذا الحقل')" oninput="this.setCustomValidity('')">
+                    <option value="Searching" class="auto-trans" data-ar="جاري البحث عن المفقود">جاري البحث عن المفقود</option>
+                    <option value="Found" class="auto-trans" data-ar="جاري البحث عن المالك (في المستودع)">جاري البحث عن المالك (في المستودع)</option>
+                    <option value="Claimed" class="auto-trans" data-ar="تم تأكيد المالك (بانتظار التسليم)">تم تأكيد المالك (بانتظار التسليم)</option>
+                    <option value="Delivered" class="auto-trans" data-ar="تم التسليم">تم التسليم</option>
+                </select>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-save"><i class="fa-solid fa-check"></i> <span class="auto-trans" data-ar="حفظ التعديل">حفظ التعديل</span></button>
+                    <button type="button" class="btn-cancel" onclick="document.getElementById('editModal').style.display='none'"><i class="fa-solid fa-times"></i> <span class="auto-trans" data-ar="إلغاء">إلغاء</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="{{ url_for('static', filename='js/global.js') }}"></script>
+
+    <script>
+        const localDict = {
+            "الإلكترونيات": "Electronics", "متعلقات شخصية": "Personal Items", "الوثائق الرسمية": "Documents", "الحقائب والأمتعة": "Bags & Luggage",
+            "منطقة الجوازات": "Passport Control", "السوق الحرة": "Duty Free", "بوابة 14": "Gate 14", "قاعة الانتظار": "Waiting Lounge",
+            "نقطة التفتيش الأمنية": "Security Checkpoint", "الكافتيريا": "Cafeteria", "بوابة 32": "Gate 32", "بوابة 10": "Gate 10", "بوابة 5": "Gate 5", "مواقف السيارات": "Parking", "استلام الأمتعة": "Baggage Claim", "قاعة المغادرين": "Departure Hall", "الحمام الرئيسي": "Main Restroom", "الصراف الآلي": "ATM", "قاعة رجال الأعمال": "VIP Lounge", "منطقة التفتيش": "Inspection Area", "Terminal 1": "Terminal 1", "Terminal 2": "Terminal 2", "Gate 32": "Gate 32",
+
+            "في المستودع": "Stored", "غير متوفر": "Not Available", "تم تأكيد المالك (بانتظار التسليم)": "Claimed (Pending Delivery)", "تم التأكد من المالك": "Claimed", "تم التسليم": "Delivered", "جاري البحث عن المفقود": "Searching for Lost Item", "جاري البحث عن المالك (في المستودع)": "Searching for Owner (In Storage)", "مفقود": "Lost", "معثور عليه": "Found", "قيد البحث": "Searching",
+
+            "لوحة القيادة": "Dashboard", "المفقودات": "Lost Reports", "المعثورات": "Found Reports", "المطابقات": "Matches", "الموظفين": "Staff Mgmt",
+            "إدارة المفقودات": "Lost Items Management", "تتبع عمليات البحث وتسليم الأغراض المفقودة لأصحابها": "Track search operations and delivery of lost items to their owners",
+            "سجل المفقودات الحالي": "Current Lost Records", "تصدير إلى Excel": "Export to Excel",
+            "رقم البلاغ": "Report ID", "صاحب البلاغ": "Reporter", "الغرض المفقود": "Lost Item", "المكان والتاريخ": "Location & Date", "حالة البحث": "Search Status", "حالة التسليم": "Delivery Status", "الإجراءات": "Actions",
+
+            "اسم الغرض:": "Item Name:", "الفئة:": "Category:", "اللون:": "Color:", "مكان الفقدان:": "Location:", "تاريخ الفقدان:": "Date Lost:", "اسم المُبلِغ:": "Reporter Name:", "الوصف الإضافي:": "Description:",
+            "تفاصيل المفقود": "Lost Item Details", "إغلاق": "Close", "تعديل حالة المفقود": "Edit Status", "حالة البحث والتسليم": "Search & Delivery Status", "تم التسليم للمالك": "Delivered to Owner", "حفظ التعديل": "Save Changes", "إلغاء": "Cancel",
+            "الوضع الليلي": "Dark Mode", "تسجيل خروج": "Logout",
+            "لا توجد بلاغات مفقودات حالياً.": "No lost reports available currently.",
+
+            "أحمد خليل": "Ahmad Khalil", "سارة محمود": "Sara Mahmoud", "عمر زيد": "Omar Zaid", "فرح علي": "Farah Ali", "محمد خالد": "Mohammad Khaled", "ليلى حسن": "Laila Hassan", "زيد طارق": "Zaid Tareq", "رامي يوسف": "Rami Yousef", "نور الدين": "Noor Al-Deen", "عبدالله سالم": "Abdullah Salem", "دينا عثمان": "Dina Othman", "ياسين عمر": "Yaseen Omar", "ياسر كمال": "Yaser Kamal", "سامي خليل": "Sami Khalil", "ماجد علي": "Majed Ali", "حسام محمد": "Husam Mohammad", "رنا احمد": "Rana Ahmad", "عمر محمود": "Omar Mahmoud",
+            "سند الخصاونة": "Sanad Al-Khasawneh", "فيصل العبادي": "Faisal Al-Abbadi", "رندة المجالي": "Randa Al-Majali", "بشار العدوان": "Bashar Al-Adwan", "مها الطراونة": "Maha Al-Tarawneh", "سيف الدين": "Saif Al-Deen", "هبة صالح": "Heba Saleh", "وليد قاسم": "Waleed Qasem", "ندى يوسف": "Nada Yousef", "طارق سامي": "Tareq Sami",
+
+            "iPhone 17 أبيض، عليه كفر شفاف فيه خدوش خفيفة.": "White iPhone 17, with a clear case having slight scratches.",
+            "حقيبة يد سوداء صغيرة تحتوي على محفظة وبطاقات بنكية.": "Small black handbag containing a wallet and bank cards.",
+            "سماعات AirPods برو داخل علبة بيضاء.": "AirPods Pro inside a white case.",
+            "لابتوب Dell رمادي داخل شنطة سوداء.": "Grey Dell laptop inside a black bag.",
+            "جواز سفر أردني باسم محمد خالد.": "Jordanian passport in the name of Mohammad Khaled.",
+            "ساعة ذكية Apple Watch سوداء.": "Black Apple Watch smartwatch.",
+            "حقيبة سفر كبيرة لون أزرق عليها شريط أحمر.": "Large blue suitcase with a red ribbon.",
+            "هاتف سامسونج Galaxy S23 أسود.": "Black Samsung Galaxy S23 phone.",
+            "نظارة شمس Ray-Ban سوداء.": "Black Ray-Ban sunglasses.",
+            "محفظة جلد بني تحتوي على هوية ورخصة.": "Brown leather wallet containing ID and license.",
+            "جهاز iPad فضي.": "Silver iPad device.",
+            "حقيبة ظهر رمادية تحتوي على لابتوب وكتب.": "Grey backpack containing a laptop and books.",
+            "هاتف Google Pixel 8 أسود مع كفر أزرق.": "Black Google Pixel 8 phone with a blue case.",
+            "حقيبة لابتوب سوداء تحتوي على شاحن وماوس": "Black laptop bag containing a charger and mouse.",
+            "سماعات Beats حمراء لاسلكية.": "Red wireless Beats headphones.",
+            "ساعة كلاسيكية فضية بسوار معدني": "Silver classic watch with a metal band.",
+            "نظارة طبية بإطار أسود داخل علبة.": "Prescription glasses with a black frame inside a case.",
+            "جهاز Nintendo Switch مع حقيبة صغيرة": "Nintendo Switch device with a small bag.",
+            "مفتاح سيارة مرسيدس مع ميدالية جلدية": "Mercedes car key with leather keychain",
+            "كاميرا Canon احترافية مع عدسة 50mm": "Professional Canon camera with 50mm lens",
+            "ملف بلاستيكي أزرق يحتوي على شهادات جامعية": "Blue plastic folder containing university degrees",
+            "ساعة يد رولكس فضية": "Silver Rolex wristwatch",
+            "حقيبة ظهر للأطفال لونها وردي مع رسمة قطة": "Pink kids' backpack with a cat drawing",
+
+            "أبيض": "White", "أزرق": "Blue", "أسود": "Black", "بني": "Brown", "ذهبي": "Gold", "أخضر": "Green", "فضي": "Silver", "بيج": "Beige", "رمادي": "Grey", "أحمر": "Red", "وردي": "Pink",
+            "لا يوجد وصف إضافي": "No extra description",
+            "مفتاح واحد مع ميدالية مكتوب عليها اسم طارق": "One key with a keychain bearing the name Tareq",
+            "في حقيبة صغيرة، الكاميرا غالية جداً": "In a small bag, camera is very expensive",
+            "أوراق رسمية تخص التخرج والجامعة": "Official graduation and university papers",
+            "ساعة كلاسيكية غالية الثمن": "Expensive classic watch",
+            "فيها ألعاب أطفال وبعض الملابس": "Contains kids toys and some clothes",
+            "تم تحديث حالة الغرض بنجاح": "Item status updated successfully!"
+        };
+
+        function updatePlaceholderLanguage() {
+            const searchInput = document.getElementById('searchInput');
+            if (document.body.getAttribute('data-lang') === 'en') {
+                searchInput.placeholder = 'Search by name, item, or report ID...';
+            } else {
+                searchInput.placeholder = 'ابحث بالاسم، الغرض، أو رقم البلاغ...';
+            }
+        }
+
+        function applyLostReportsTranslations() {
+            let lang = document.body.getAttribute('data-lang') || 'ar';
+
+            document.querySelectorAll('.auto-trans').forEach(el => {
+                let arText = el.getAttribute('data-ar');
+                if (arText) {
+                    arText = arText.trim();
+                    let enText = localDict[arText] || arText;
+
+                    if (lang === 'en') {
+                        if (el.innerHTML.includes(arText)) {
+                            el.innerHTML = el.innerHTML.replace(arText, enText);
+                        } else if (el.textContent.trim() === arText) {
+                            el.textContent = enText;
+                        }
+                    } else {
+                        if (el.innerHTML.includes(enText)) {
+                            el.innerHTML = el.innerHTML.replace(enText, arText);
+                        } else if (el.textContent.trim() === enText) {
+                            el.textContent = arText;
+                        }
+                    }
+                }
+            });
+            updatePlaceholderLanguage();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyLostReportsTranslations();
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'data-lang') {
+                        applyLostReportsTranslations();
+                    }
+                });
+            });
+            observer.observe(document.body, { attributes: true, attributeFilter: ['data-lang'] });
+        });
+
+        function filterTable() {
+            let input = document.getElementById("searchInput");
+            let filter = input.value.toLowerCase();
+            let tbody = document.querySelector("#lostTable tbody");
+            let tr = tbody.getElementsByTagName("tr");
+
+            for (let i = 0; i < tr.length; i++) {
+                if (tr[i].querySelector("td[colspan]")) continue;
+                let rowText = tr[i].textContent || tr[i].innerText;
+                if (rowText.toLowerCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+
+        function exportTableToExcel(tableID, filename = '') {
+            var table = document.getElementById(tableID);
+            var clonedTable = table.cloneNode(true);
+
+            var elementsToRemove = clonedTable.querySelectorAll('.no-export');
+            elementsToRemove.forEach(function (el) { el.parentNode.removeChild(el); });
+
+            var rows = clonedTable.querySelectorAll('tr');
+            rows.forEach(row => {
+                if (row.style.display === 'none') {
+                    row.parentNode.removeChild(row);
+                }
+            });
+
+            var wb = XLSX.utils.table_to_book(clonedTable, { sheet: "Lost Items" });
+            filename = filename ? filename + '.xlsx' : 'lost_data.xlsx';
+            XLSX.writeFile(wb, filename);
+        }
+
+        function openViewModal(name, category, color, loc, date, desc, reporter, image) {
+            let nameEl = document.getElementById('viewName');
+            nameEl.setAttribute('data-ar', name);
+            nameEl.innerText = name;
+
+            let catEl = document.getElementById('viewCategory');
+            catEl.setAttribute('data-ar', category);
+            catEl.innerText = category;
+
+            let colorEl = document.getElementById('viewColor');
+            colorEl.setAttribute('data-ar', color);
+            colorEl.innerText = color;
+
+            let locEl = document.getElementById('viewLocation');
+            locEl.setAttribute('data-ar', loc);
+            locEl.innerText = loc;
+
+            let dateEl = document.getElementById('viewDate');
+            dateEl.setAttribute('data-ar', date);
+            dateEl.innerText = date;
+
+            let descVal = desc || 'لا يوجد وصف إضافي';
+            let descEl = document.getElementById('viewDesc');
+            descEl.setAttribute('data-ar', descVal);
+            descEl.innerText = descVal;
+
+            let repEl = document.getElementById('viewFinder');
+            repEl.setAttribute('data-ar', reporter);
+            repEl.innerText = reporter;
+
+            let imgElement = document.getElementById('viewImage');
+            if (image && image !== 'default.jpg') {
+                imgElement.src = "/static/uploads/" + image;
+                imgElement.style.display = 'block';
+            } else {
+                imgElement.style.display = 'none';
+            }
+
+            applyLostReportsTranslations();
+
+            document.getElementById('viewModal').style.display = 'flex';
+        }
+
+        function openEditModal(id, currentStatus) {
+            document.getElementById('editForm').action = '/update_status/lost/' + id;
+
+            let select = document.getElementById('editStatus');
+            if (currentStatus === 'Searching') select.value = 'Searching';
+            else if (currentStatus === 'Found') select.value = 'Found';
+            else if (currentStatus === 'Delivered') select.value = 'Delivered';
+            else select.value = 'Claimed';
+
+            document.getElementById('editModal').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
